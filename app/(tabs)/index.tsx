@@ -1,35 +1,11 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import type { ComponentProps } from 'react';
+import { Link } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-type IconName = ComponentProps<typeof FontAwesome>['name'];
+import AppHeader from '../_components/AppHeader';
+import { brands, categories } from '../../data/catalog';
 
-type Category = {
-  label: string;
-  color: string;
-  icon?: IconName;
-};
-
-type Brand = {
-  name: string;
-  mark?: string;
-  color?: string;
-  text?: string;
-};
-
-const categories: Category[] = [
-  { label: 'beverages', color: '#1398de', icon: 'glass' },
-  { label: 'dairies', color: '#ffe160', icon: 'tint' },
-  { label: 'snacks', color: '#e83375' },
-  { label: 'breakfasts', color: '#ff7918' },
-  { label: 'desserts', color: '#7448e8' },
-  { label: 'chocolates', color: '#201d1a' },
-  { label: 'biscuits-and-cakes', color: '#bb6d00' },
-  { label: 'cereals-and-potatoes', color: '#11aa85' },
-  { label: 'meals', color: '#df301e' },
-  { label: 'plant-based-foods', color: '#15953e' },
-];
 //filtros de gustos
 const tastes = [
   'organic',
@@ -43,32 +19,11 @@ const tastes = [
   'high-fiber',
   'low-fat',
 ];
-//marcas
-const brands: Brand[] = [
-  { name: 'nestle', mark: 'NESTLE', color: '#cfe0ff', text: '#3563c6' },
-  { name: 'coca-cola', mark: 'COKE', color: '#ffdede', text: '#e22228' },
-  { name: 'pepsi', mark: 'PEPSI', color: '#321c9b', text: '#ffffff' },
-  { name: 'danone', mark: 'DANONE', color: '#1097da', text: '#ffffff' },
-  { name: 'kelloggs', mark: 'KELLOGGS', color: '#ffe0de', text: '#d13f41' },
-  { name: 'unilever' },
-  { name: 'mondelez' },
-  { name: 'mars' },
-  { name: 'ferrero' },
-  { name: 'lactalis' },
-];
 
 export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <View style={styles.header}>
-        <Pressable style={styles.headerButton} hitSlop={10}>
-          <FontAwesome name="bars" size={15} color="#00591c" />
-        </Pressable>
-        <Text style={styles.brand}>Menú digital</Text>
-        <Pressable style={styles.profileButton} hitSlop={10}>
-          <FontAwesome name="user-circle" size={16} color="#00591c" />
-        </Pressable>
-      </View>
+      <AppHeader />
 
       <ScrollView
         style={styles.scroll}
@@ -84,19 +39,22 @@ export default function HomeScreen() {
 
         <View style={styles.categoryGrid}>
           {categories.map((category) => (
-            <Pressable
+            <Link
               key={category.label}
-              style={[styles.categoryCard, { backgroundColor: category.color }]}>
-              {category.icon ? (
-                <FontAwesome
-                  name={category.icon}
-                  size={34}
-                  color="rgba(255,255,255,0.28)"
-                  style={styles.categoryIcon}
-                />
-              ) : null}
-              <Text style={styles.categoryLabel}>{category.label}</Text>
-            </Pressable>
+              href={{ pathname: '/category/[id]', params: { id: category.id } }}
+              asChild>
+              <Pressable style={{ ...styles.categoryCard, backgroundColor: category.color }}>
+                {category.icon ? (
+                  <FontAwesome
+                    name={category.icon}
+                    size={34}
+                    color="rgba(255,255,255,0.28)"
+                    style={styles.categoryIcon}
+                  />
+                ) : null}
+                <Text style={styles.categoryLabel}>{category.label}</Text>
+              </Pressable>
+            </Link>
           ))}
         </View>
 
@@ -114,16 +72,18 @@ export default function HomeScreen() {
           <Text style={styles.caption}>Explored through the lens of quality.</Text>
           <View style={styles.brandGrid}>
             {brands.map((item) => (
-              <Pressable key={item.name} style={styles.brandCard}>
-                {item.mark ? (
-                  <View style={[styles.brandMark, { backgroundColor: item.color }]}>
-                    <Text style={[styles.brandMarkText, { color: item.text }]}>{item.mark}</Text>
-                  </View>
-                ) : (
-                  <View style={styles.brandSpacer} />
-                )}
-                <Text style={styles.brandName}>{item.name}</Text>
-              </Pressable>
+              <Link key={item.name} href={{ pathname: '/brand/[id]', params: { id: item.id } }} asChild>
+                <Pressable style={styles.brandCard}>
+                  {item.mark ? (
+                    <View style={{ ...styles.brandMark, backgroundColor: item.color }}>
+                      <Text style={{ ...styles.brandMarkText, color: item.text }}>{item.mark}</Text>
+                    </View>
+                  ) : (
+                    <View style={styles.brandSpacer} />
+                  )}
+                  <Text style={styles.brandName}>{item.name}</Text>
+                </Pressable>
+              </Link>
             ))}
           </View>
         </View>
@@ -137,33 +97,6 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-  },
-  header: {
-    height: 44,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    backgroundColor: '#ffffff',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 5,
-    zIndex: 2,
-  },
-  headerButton: {
-    width: 24,
-    alignItems: 'flex-start',
-  },
-  brand: {
-    flex: 1,
-    color: '#050505',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  profileButton: {
-    width: 24,
-    alignItems: 'flex-end',
   },
   scroll: {
     flex: 1,
