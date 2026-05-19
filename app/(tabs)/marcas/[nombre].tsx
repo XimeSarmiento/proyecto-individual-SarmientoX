@@ -1,4 +1,4 @@
-import { Redirect, Stack, useLocalSearchParams } from 'expo-router';
+import { Redirect, useLocalSearchParams } from 'expo-router';
 
 import ProductListScreen from '@/src/components/ProductListScreen';
 import { brands, products } from '@/src/data/catalog';
@@ -15,16 +15,13 @@ export default function BrandProductsScreen() {
   const brandProducts = products.filter((product) => product.brandId === brand.id);
 
   return (
-    <>
-      <Stack.Screen options={{ title: brand.title }} />
-      <ProductListScreen
-        title={brand.title}
-        countLabel={`${brandProducts.length} PRODUCTS`}
-        placeholder={`Search ${brand.name} products`}
-        products={brandProducts}
-        originType="marca"
-        originId={brand.id}
-      />
-    </>
+    <ProductListScreen
+      title={brand.title}
+      countLabel={`${brandProducts.length} PRODUCTS`}
+      placeholder={`Search ${brand.name} products`}
+      products={brandProducts}
+      originType="marca"
+      originId={brand.id}
+    />
   );
 }

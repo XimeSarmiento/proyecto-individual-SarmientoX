@@ -1,11 +1,11 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link, router } from 'expo-router';
+import { Link } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Product } from '@/src/data/catalog';
-import { fichaShowRoute, ROUTES } from '@/src/navigation/routes';
+import { fichaShowRoute } from '@/src/navigation/routes';
 import AppHeader from './AppHeader';
 
 type ProductListScreenProps = {
@@ -43,7 +43,7 @@ export default function ProductListScreen({
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <AppHeader onLeftPress={() => router.replace(ROUTES.HOME)} />
+      <AppHeader />
 
       <ScrollView
         style={styles.scroll}
