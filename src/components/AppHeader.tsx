@@ -30,9 +30,7 @@ export default function AppHeader({
         </Pressable>
       ) : (
         <View style={styles.sideButton}>
-          <View style={styles.avatar}>
-            <FontAwesome name="user" size={14} color="#ffffff" />
-          </View>
+            <FontAwesome name="user-circle-o" size={18} color="#00591c" />
         </View>
       )}
     </View>
