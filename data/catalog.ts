@@ -42,8 +42,8 @@ export type Product = {
 };
 
 export const categories: Category[] = [
-  { id: 'beverages', label: 'beverages', title: 'Beverages', color: '#1398de', icon: 'glass' },
-  { id: 'dairies', label: 'dairies', title: 'Dairies', color: '#ffe160', icon: 'tint' },
+  { id: 'beverages', label: 'beverages', title: 'Beverages', color: '#1398de' },
+  { id: 'dairies', label: 'dairies', title: 'Dairies', color: '#ffe160'},
   { id: 'snacks', label: 'snacks', title: 'Snacks', color: '#e83375' },
   { id: 'breakfasts', label: 'breakfasts', title: 'Breakfasts', color: '#ff7918' },
   { id: 'desserts', label: 'desserts', title: 'Desserts', color: '#7448e8' },
