@@ -1,25 +1,27 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Redirect, router, useLocalSearchParams } from 'expo-router';
+import { Redirect, router, Stack, useLocalSearchParams } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import AppHeader from '../../_components/AppHeader';
-import { products } from '../../../data/catalog';
+import AppHeader from '@/src/components/AppHeader';
+import { products } from '@/src/data/catalog';
+import { buildRoute, ROUTES } from '@/src/navigation/routes';
 
 export default function ProductDetailScreen() {
   const { id, originType, originId } = useLocalSearchParams<{
     id: string;
-    originType?: 'category' | 'brand';
+    originType?: 'categoria' | 'marca';
     originId?: string;
   }>();
   const product = products.find((item) => item.id === id);
 
   if (!product) {
-    return <Redirect href="/" />;
+    return <Redirect href={ROUTES.HOME} />;
   }
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <Stack.Screen options={{ title: product.name }} />
       <AppHeader
         leftIcon="arrow-left"
         rightIcon="share"
@@ -93,14 +95,14 @@ export default function ProductDetailScreen() {
   );
 }
 
-function goBackToOrigin(originType?: 'category' | 'brand', originId?: string) {
-  if (originType === 'category' && originId) {
-    router.replace({ pathname: '/category/[id]', params: { id: originId } });
+function goBackToOrigin(originType?: 'categoria' | 'marca', originId?: string) {
+  if (originType === 'categoria' && originId) {
+    router.replace(buildRoute(ROUTES.CATEGORIA, { nombre: originId }));
     return;
   }
 
-  if (originType === 'brand' && originId) {
-    router.replace({ pathname: '/brand/[id]', params: { id: originId } });
+  if (originType === 'marca' && originId) {
+    router.replace(buildRoute(ROUTES.MARCA, { nombre: originId }));
     return;
   }
 

@@ -4,7 +4,8 @@ import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import type { Product } from '../../data/catalog';
+import type { Product } from '@/src/data/catalog';
+import { fichaShowRoute, ROUTES } from '@/src/navigation/routes';
 import AppHeader from './AppHeader';
 
 type ProductListScreenProps = {
@@ -12,7 +13,7 @@ type ProductListScreenProps = {
   countLabel: string;
   placeholder: string;
   products: Product[];
-  originType: 'category' | 'brand';
+  originType: 'categoria' | 'marca';
   originId: string;
 };
 
@@ -42,7 +43,7 @@ export default function ProductListScreen({
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <AppHeader onLeftPress={() => router.replace('/')} />
+      <AppHeader onLeftPress={() => router.replace(ROUTES.HOME)} />
 
       <ScrollView
         style={styles.scroll}
@@ -110,18 +111,13 @@ function ProductCard({
   originId,
 }: {
   product: Product;
-  originType: 'category' | 'brand';
+  originType: 'categoria' | 'marca';
   originId: string;
 }) {
   const nutriColor = product.nutriScore === 'C' ? '#f1b600' : product.nutriScore === 'B' ? '#22c765' : '#08a347';
 
   return (
-    <Link
-      href={{
-        pathname: '/product/[id]',
-        params: { id: product.id, originType, originId },
-      }}
-      asChild>
+    <Link href={fichaShowRoute(product.id, originType, originId)} asChild>
       <Pressable style={styles.card}>
         <View style={styles.imagePlaceholder}>
           <FontAwesome name="cutlery" size={28} color="#c7c9cf" />

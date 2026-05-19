@@ -3,8 +3,9 @@ import { Link } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import AppHeader from '../_components/AppHeader';
-import { brands, categories } from '../../data/catalog';
+import AppHeader from '@/src/components/AppHeader';
+import { brands, categories } from '@/src/data/catalog';
+import { buildRoute, ROUTES } from '@/src/navigation/routes';
 
 //filtros de gustos
 const tastes = [
@@ -41,7 +42,7 @@ export default function HomeScreen() {
           {categories.map((category) => (
             <Link
               key={category.label}
-              href={{ pathname: '/category/[id]', params: { id: category.id } }}
+              href={buildRoute(ROUTES.CATEGORIA, { nombre: category.id })}
               asChild>
               <Pressable style={{ ...styles.categoryCard, backgroundColor: category.color }}>
                 {category.icon ? (
@@ -72,7 +73,7 @@ export default function HomeScreen() {
           <Text style={styles.caption}>Explored through the lens of quality.</Text>
           <View style={styles.brandGrid}>
             {brands.map((item) => (
-              <Link key={item.name} href={{ pathname: '/brand/[id]', params: { id: item.id } }} asChild>
+              <Link key={item.name} href={buildRoute(ROUTES.MARCA, { nombre: item.id })} asChild>
                 <Pressable style={styles.brandCard}>
                   {item.mark ? (
                     <View style={{ ...styles.brandMark, backgroundColor: item.color }}>
