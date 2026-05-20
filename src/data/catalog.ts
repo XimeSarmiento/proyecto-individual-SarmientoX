@@ -82,86 +82,82 @@ export const brands: Brand[] = [
   { id: 'lactalis', name: 'lactalis', title: 'Lactalis' },
 ];
 
-const categoryProducts: Record<string, string[]> = {
-  beverages: [
-    'Organic Cold Pressed Kale & Ginger',
-    'Artisan Sparkling Botanical Mist',
-    'Wild Berry Raw Kombucha',
-    'Pure Philippine Coconut Water',
-    'High-Mineral Volcanic Seltzer',
-  ],
-  dairies: [
-    'Creamy Meadow Greek Yogurt',
-    'Alpine Vanilla Kefir',
-    'Soft Farmhouse Ricotta',
-    'Golden Butter Cultured Spread',
-    'Fresh Milk Morning Blend',
-  ],
-  snacks: [
-    'Sea Salt Lentil Crisps',
-    'Smoked Paprika Corn Bites',
-    'Roasted Chickpea Trail Mix',
-    'Herbed Rice Snack Squares',
-    'Crunchy Tomato Seed Clusters',
-  ],
-  breakfasts: [
-    'Maple Sunrise Oat Cups',
-    'Toasted Honey Granola',
-    'Berry Chia Breakfast Bowl',
-    'Cinnamon Ancient Grain Puffs',
-    'Apple Almond Morning Muesli',
-  ],
-  desserts: [
-    'Velvet Vanilla Pudding',
-    'Lemon Cloud Custard',
-    'Dark Cherry Frozen Cream',
-    'Salted Caramel Rice Dessert',
-    'Coconut Mango Sweet Pot',
-  ],
-  chocolates: [
-    'Single Origin Dark Square',
-    'Hazelnut Cocoa Tablet',
-    'Sea Salt Milk Chocolate',
-    'Crunchy Almond Cocoa Bar',
-    'Velvet Truffle Mini Bites',
-  ],
-  'biscuits-and-cakes': [
-    'Oat Honey Breakfast Biscuit',
-    'Lemon Tea Cake Slice',
-    'Cocoa Marble Mini Cake',
-    'Vanilla Shortbread Rounds',
-    'Spiced Apple Soft Cookie',
-  ],
-  'cereals-and-potatoes': [
-    'Rustic Potato Gnocchi',
-    'Golden Corn Flake Bowl',
-    'Quinoa Garden Grain Mix',
-    'Sweet Potato Crunch Cubes',
-    'Whole Wheat Spiral Cereal',
-  ],
-  meals: [
-    'Garden Tomato Pasta Bowl',
-    'Mediterranean Chickpea Plate',
-    'Herbed Rice & Lentil Tray',
-    'Pumpkin Sage Risotto Cup',
-    'Mushroom Barley Comfort Pot',
-  ],
-  'plant-based-foods': [
-    'Smoky Pea Protein Burger',
-    'Silky Oat Barista Drink',
-    'Chickpea Herb Falafel',
-    'Cashew Cream Alfredo',
-    'Green Lentil Protein Bites',
-  ],
+type ProductSeed = {
+  name: string;
+  brandId: Brand['id'];
 };
 
-const makers = [
-  'Green Garden Co.',
-  'Mist & Flora',
-  'The Fermentary',
-  'Isla Vida',
-  'Summit Springs',
-];
+const categoryProducts: Record<string, ProductSeed[]> = {
+  beverages: [
+    { name: 'Agua mineral con gas', brandId: 'nestle' },
+    { name: 'Gaseosa cola clasica', brandId: 'coca-cola' },
+    { name: 'Refresco cola sin azucar', brandId: 'pepsi' },
+    { name: 'Yogur bebible de frutilla', brandId: 'danone' },
+    { name: 'Bebida de avena con cacao', brandId: 'kelloggs' },
+  ],
+  dairies: [
+    { name: 'Yogur natural cremoso', brandId: 'danone' },
+    { name: 'Leche entera familiar', brandId: 'lactalis' },
+    { name: 'Postre lacteo de chocolate', brandId: 'nestle' },
+    { name: 'Yogur griego con frutos rojos', brandId: 'danone' },
+    { name: 'Queso crema clasico', brandId: 'lactalis' },
+  ],
+  snacks: [
+    { name: 'Papas crocantes sabor queso', brandId: 'pepsi' },
+    { name: 'Galletitas saladas con hierbas', brandId: 'mondelez' },
+    { name: 'Mix de mani y chocolate', brandId: 'mars' },
+    { name: 'Avellanas tostadas con cacao', brandId: 'ferrero' },
+    { name: 'Cubitos de queso', brandId: 'lactalis' },
+  ],
+  breakfasts: [
+    { name: 'Cereal de maiz con miel', brandId: 'kelloggs' },
+    { name: 'Avena instantanea con banana', brandId: 'nestle' },
+    { name: 'Copos de arroz chocolatados', brandId: 'kelloggs' },
+    { name: 'Granola con almendras', brandId: 'kelloggs' },
+    { name: 'Muesli integral con manzana', brandId: 'nestle' },
+  ],
+  desserts: [
+    { name: 'Flan de vainilla con caramelo', brandId: 'nestle' },
+    { name: 'Helado de crema americana', brandId: 'unilever' },
+    { name: 'Mousse de chocolate aireado', brandId: 'mondelez' },
+    { name: 'Postre de avellana y leche', brandId: 'ferrero' },
+    { name: 'Arroz con leche cremoso', brandId: 'lactalis' },
+  ],
+  chocolates: [
+    { name: 'Tableta de chocolate con leche', brandId: 'nestle' },
+    { name: 'Barra de chocolate y mani', brandId: 'mars' },
+    { name: 'Bocaditos de chocolate blanco', brandId: 'mondelez' },
+    { name: 'Bombones de avellana', brandId: 'ferrero' },
+    { name: 'Chocolate relleno de dulce de leche', brandId: 'mars' },
+  ],
+  'biscuits-and-cakes': [
+    { name: 'Galletitas de avena y miel', brandId: 'mondelez' },
+    { name: 'Alfajor de chocolate', brandId: 'mondelez' },
+    { name: 'Budin marmolado individual', brandId: 'nestle' },
+    { name: 'Cookies con chips de chocolate', brandId: 'mars' },
+    { name: 'Bizcochos dulces de vainilla', brandId: 'mondelez' },
+  ],
+  'cereals-and-potatoes': [
+    { name: 'Pure de papas instantaneo', brandId: 'unilever' },
+    { name: 'Cereal de maiz dorado', brandId: 'kelloggs' },
+    { name: 'Arroz integral con vegetales', brandId: 'unilever' },
+    { name: 'Papas noisette congeladas', brandId: 'unilever' },
+    { name: 'Cereal integral en espirales', brandId: 'kelloggs' },
+  ],
+  meals: [
+    { name: 'Sopa crema de verduras', brandId: 'unilever' },
+    { name: 'Arroz con lentejas especiado', brandId: 'unilever' },
+    { name: 'Risotto de calabaza', brandId: 'nestle' },
+    { name: 'Guiso de cebada y hongos', brandId: 'unilever' },
+  ],
+  'plant-based-foods': [
+    { name: 'Hamburguesa vegetal de arvejas', brandId: 'unilever' },
+    { name: 'Bebida vegetal para cafe', brandId: 'danone' },
+    { name: 'Falafel de garbanzos', brandId: 'unilever' },
+    { name: 'Salsa vegetal tipo alfredo', brandId: 'danone' },
+    { name: 'Bocaditos de lentejas verdes', brandId: 'unilever' },
+  ],
+};
 
 const scorePairs: Array<Pick<Product, 'nutriScore' | 'ecoScore'>> = [
   { nutriScore: 'A', ecoScore: 'A+' },
@@ -182,14 +178,18 @@ const nutritionValues = [
   { label: 'Salt', value: '0.10g' },
 ];
 
-export const products: Product[] = categories.flatMap((category, categoryIndex) =>
-  categoryProducts[category.id].map((name, productIndex) => {
-    const brand = brands[(categoryIndex * 5 + productIndex) % brands.length];
+export const products: Product[] = categories.flatMap((category) =>
+  categoryProducts[category.id].map((product, productIndex) => {
+    const brand = brands.find((item) => item.id === product.brandId);
+
+    if (!brand) {
+      throw new Error(`Unknown brand "${product.brandId}" for product "${product.name}"`);
+    }
 
     return {
       id: `${category.id}-${productIndex + 1}`,
-      name,
-      maker: makers[productIndex],
+      name: product.name,
+      maker: brand.title,
       categoryId: category.id,
       brandId: brand.id,
       ...scorePairs[productIndex],
