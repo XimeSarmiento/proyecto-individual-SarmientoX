@@ -1,11 +1,11 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Product } from '@/src/data/catalog';
-import { fichaShowRoute } from '@/src/navigation/routes';
+import { fichaShowRoute, ROUTES } from '@/src/navigation/routes';
 import AppHeader from './AppHeader';
 
 type ProductListScreenProps = {
@@ -57,7 +57,10 @@ export default function ProductListScreen({
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <AppHeader />
+      <AppHeader
+        leftIcon="arrow-left"
+        onLeftPress={() => router.replace(ROUTES.HOME)}
+      />
 
       <FlatList
         data={loading || error ? [] : filteredProducts}

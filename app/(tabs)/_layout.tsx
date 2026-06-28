@@ -56,30 +56,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <TabBarIcon name="heart" color={color} />,
         }}
       />
-      <Tabs.Screen
-        name="categorias/[nombre]"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="marcas/[nombre]"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="tastes/[nombre]"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="ficha/[id]"
-        options={{
-          href: null,
-        }}
-      />
     </Tabs>
   );
 }

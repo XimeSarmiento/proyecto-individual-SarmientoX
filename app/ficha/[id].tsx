@@ -139,6 +139,11 @@ export default function ProductDetailScreen() {
 }
 
 function goBackToOrigin(originType?: 'categoria' | 'marca' | 'taste', originId?: string) {
+  if (router.canGoBack()) {
+    router.back();
+    return;
+  }
+
   if (originType === 'categoria' && originId) {
     router.replace(buildRoute(ROUTES.CATEGORIA, { nombre: originId }));
     return;
@@ -154,7 +159,7 @@ function goBackToOrigin(originType?: 'categoria' | 'marca' | 'taste', originId?:
     return;
   }
 
-  router.back();
+  router.replace(ROUTES.HOME);
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
