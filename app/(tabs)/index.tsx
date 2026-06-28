@@ -4,22 +4,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AppHeader from '@/src/components/AppHeader';
-import { brands, categories } from '@/src/data/catalog';
+import { brands, categories, tastes } from '@/src/data/catalog';
 import { buildRoute, ROUTES } from '@/src/navigation/routes';
-
-//filtros de gustos
-const tastes = [
-  'organic',
-  'vegan',
-  'vegetarian',
-  'gluten-free',
-  'no-added-sugar',
-  'fair-trade',
-  'lactose-free',
-  'palm-oil-free',
-  'high-fiber',
-  'low-fat',
-];
 
 export default function HomeScreen() {
   return (
@@ -62,9 +48,11 @@ export default function HomeScreen() {
         <Text style={styles.tasteTitle}>Refine by Taste</Text>
         <View style={styles.chipWrap}>
           {tastes.map((taste) => (
-            <Pressable key={taste} style={styles.chip}>
-              <Text style={styles.chipText}>{taste}</Text>
-            </Pressable>
+            <Link key={taste.id} href={buildRoute(ROUTES.TASTE, { nombre: taste.id })} asChild>
+              <Pressable style={styles.chip}>
+                <Text style={styles.chipText}>{taste.id}</Text>
+              </Pressable>
+            </Link>
           ))}
         </View>
 

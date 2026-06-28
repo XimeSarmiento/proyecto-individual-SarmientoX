@@ -13,7 +13,7 @@ type ProductListScreenProps = {
   countLabel: string;
   placeholder: string;
   products: Product[];
-  originType: 'categoria' | 'marca';
+  originType: 'categoria' | 'marca' | 'taste';
   originId: string;
   loading?: boolean;
   error?: string | null;
@@ -135,7 +135,7 @@ function ProductCard({
   originId,
 }: {
   product: Product;
-  originType: 'categoria' | 'marca';
+  originType: 'categoria' | 'marca' | 'taste';
   originId: string;
 }) {
   const nutriColor = product.nutriScore === 'C' ? '#f1b600' : product.nutriScore === 'B' ? '#22c765' : '#08a347';

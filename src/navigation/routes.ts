@@ -6,6 +6,7 @@ export const ROUTES = {
   TABS_FAVORITES: '/favorites',
   CATEGORIA: '/categorias/[nombre]',
   MARCA: '/marcas/[nombre]',
+  TASTE: '/tastes/[nombre]',
   FICHA: '/ficha/[id]',
 } as const;
 
@@ -23,6 +24,6 @@ export const buildRoute = (route: AppRoute, params?: RouteParams): Href => {
   } as Href;
 };
 
-export function fichaShowRoute(id: string, originType?: 'categoria' | 'marca', originId?: string) {
+export function fichaShowRoute(id: string, originType?: 'categoria' | 'marca' | 'taste', originId?: string) {
   return buildRoute(ROUTES.FICHA, { id, originType, originId });
 }

@@ -69,6 +69,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="tastes/[nombre]"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="ficha/[id]"
         options={{
           href: null,

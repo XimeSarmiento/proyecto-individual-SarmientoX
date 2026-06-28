@@ -20,6 +20,11 @@ export type Brand = {
   text?: string;
 };
 
+export type Taste = {
+  id: string;
+  title: string;
+};
+
 export type Product = {
   id: string;
   name: string;
@@ -81,6 +86,19 @@ export const brands: Brand[] = [
   { id: 'mars', name: 'mars', title: 'Mars' },
   { id: 'ferrero', name: 'ferrero', title: 'Ferrero' },
   { id: 'lactalis', name: 'lactalis', title: 'Lactalis' },
+];
+
+export const tastes: Taste[] = [
+  { id: 'organic', title: 'Organic' },
+  { id: 'vegan', title: 'Vegan' },
+  { id: 'vegetarian', title: 'Vegetarian' },
+  { id: 'gluten-free', title: 'Gluten Free' },
+  { id: 'no-added-sugar', title: 'No Added Sugar' },
+  { id: 'fair-trade', title: 'Fair Trade' },
+  { id: 'lactose-free', title: 'Lactose Free' },
+  { id: 'palm-oil-free', title: 'Palm Oil Free' },
+  { id: 'high-fiber', title: 'High Fiber' },
+  { id: 'low-fat', title: 'Low Fat' },
 ];
 
 type ProductSeed = {

@@ -62,6 +62,10 @@ export async function getProductsByBrand(brand: string, page = 1, signal?: Abort
   return requestProductPage({ brands_tags: brand }, page, 10, signal);
 }
 
+export async function getProductsByTaste(taste: string, page = 1, signal?: AbortSignal) {
+  return requestProductPage({ labels_tags_en: taste }, page, 10, signal);
+}
+
 async function requestProductPage(
   filters: Record<string, string>,
   page: number,

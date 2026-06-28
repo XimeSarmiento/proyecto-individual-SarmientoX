@@ -12,7 +12,7 @@ import { getProduct } from '@/src/services/openFoodFacts';
 export default function ProductDetailScreen() {
   const { id, originType, originId } = useLocalSearchParams<{
     id: string;
-    originType?: 'categoria' | 'marca';
+    originType?: 'categoria' | 'marca' | 'taste';
     originId?: string;
   }>();
   const localProduct = products.find((item) => item.id === id);
@@ -138,7 +138,7 @@ export default function ProductDetailScreen() {
   );
 }
 
-function goBackToOrigin(originType?: 'categoria' | 'marca', originId?: string) {
+function goBackToOrigin(originType?: 'categoria' | 'marca' | 'taste', originId?: string) {
   if (originType === 'categoria' && originId) {
     router.replace(buildRoute(ROUTES.CATEGORIA, { nombre: originId }));
     return;
@@ -146,6 +146,11 @@ function goBackToOrigin(originType?: 'categoria' | 'marca', originId?: string) {
 
   if (originType === 'marca' && originId) {
     router.replace(buildRoute(ROUTES.MARCA, { nombre: originId }));
+    return;
+  }
+
+  if (originType === 'taste' && originId) {
+    router.replace(buildRoute(ROUTES.TASTE, { nombre: originId }));
     return;
   }
 
