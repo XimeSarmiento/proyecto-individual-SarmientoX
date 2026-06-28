@@ -26,9 +26,10 @@ export type Product = {
   maker: string;
   categoryId: string;
   brandId: string;
-  nutriScore: 'A' | 'B' | 'C';
-  ecoScore: 'A+' | 'A' | 'B+' | 'B';
-  novaGroup: 1 | 2 | 3;
+  nutriScore: 'A' | 'B' | 'C' | 'D' | 'E' | '?';
+  ecoScore: 'A+' | 'A' | 'B+' | 'B' | 'C' | 'D' | 'E' | '?';
+  novaGroup: 1 | 2 | 3 | 4 | '?';
+  imageUrl?: string;
   energy: string;
   fat: string;
   protein: string;

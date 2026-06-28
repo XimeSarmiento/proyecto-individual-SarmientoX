@@ -1,11 +1,13 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AppHeader from '@/src/components/AppHeader';
-import { products } from '@/src/data/catalog';
+import { products, type Product } from '@/src/data/catalog';
 import { buildRoute, ROUTES } from '@/src/navigation/routes';
+import { getProduct } from '@/src/services/openFoodFacts';
 
 export default function ProductDetailScreen() {
   const { id, originType, originId } = useLocalSearchParams<{
@@ -13,11 +15,49 @@ export default function ProductDetailScreen() {
     originType?: 'categoria' | 'marca';
     originId?: string;
   }>();
-  const product = products.find((item) => item.id === id);
+  const localProduct = products.find((item) => item.id === id);
+  const [product, setProduct] = useState<Product | null>(localProduct ?? null);
+  const [loading, setLoading] = useState(!localProduct);
+  const [failed, setFailed] = useState(false);
 
-  if (!product) {
+  useEffect(() => {
+    if (localProduct || !id) return;
+
+    const controller = new AbortController();
+    setLoading(true);
+    setFailed(false);
+    getProduct(id, controller.signal)
+      .then((remoteProduct) => {
+        setProduct(remoteProduct);
+        setFailed(!remoteProduct);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setFailed(true);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [id, localProduct]);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <AppHeader leftIcon="arrow-left" onLeftPress={() => router.back()} />
+        <View style={styles.loadingState}>
+          <ActivityIndicator size="large" color="#087f23" />
+          <Text style={styles.loadingText}>Cargando producto…</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!product && failed) {
     return <Redirect href={ROUTES.HOME} />;
   }
+
+  if (!product) return null;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -28,7 +68,11 @@ export default function ProductDetailScreen() {
       />
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.hero} />
+        <View style={styles.hero}>
+          {product.imageUrl ? (
+            <Image source={{ uri: product.imageUrl }} resizeMode="contain" style={styles.heroImage} />
+          ) : null}
+        </View>
 
         <View style={styles.summaryCard}>
           <Pressable style={styles.favoriteButton}>
@@ -131,6 +175,21 @@ const styles = StyleSheet.create({
   hero: {
     height: 220,
     backgroundColor: '#ff6259',
+  },
+  heroImage: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#f5f5f2',
+  },
+  loadingState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    color: '#6f727a',
+    fontSize: 13,
+    marginTop: 12,
   },
   summaryCard: {
     minHeight: 244,

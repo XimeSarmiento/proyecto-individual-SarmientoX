@@ -1,7 +1,7 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Link } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Product } from '@/src/data/catalog';
@@ -15,6 +15,9 @@ type ProductListScreenProps = {
   products: Product[];
   originType: 'categoria' | 'marca';
   originId: string;
+  loading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
 };
 
 export default function ProductListScreen({
@@ -24,6 +27,9 @@ export default function ProductListScreen({
   products,
   originType,
   originId,
+  loading = false,
+  error,
+  onRetry,
 }: ProductListScreenProps) {
   const [query, setQuery] = useState('');
   const normalizedQuery = query.trim().toLowerCase();
@@ -70,7 +76,23 @@ export default function ProductListScreen({
           ) : null}
         </View>
 
-        {filteredProducts.length ? (
+        {loading ? (
+          <View style={styles.emptyState}>
+            <ActivityIndicator size="large" color="#087f23" />
+            <Text style={styles.emptyText}>Cargando productos…</Text>
+          </View>
+        ) : error ? (
+          <View style={styles.emptyState}>
+            <FontAwesome name="exclamation-circle" size={24} color="#bd2432" />
+            <Text style={styles.emptyTitle}>No se pudo cargar el catálogo</Text>
+            <Text style={styles.emptyText}>{error}</Text>
+            {onRetry ? (
+              <Pressable onPress={onRetry} style={styles.retryButton}>
+                <Text style={styles.retryText}>Reintentar</Text>
+              </Pressable>
+            ) : null}
+          </View>
+        ) : filteredProducts.length ? (
           <View style={styles.productStack}>
             {filteredProducts.map((product) => (
               <ProductCard
@@ -89,7 +111,7 @@ export default function ProductListScreen({
           </View>
         )}
 
-        <View style={styles.skeleton}>
+        {!loading && !error ? <View style={styles.skeleton}>
           <View style={styles.skeletonImage} />
           <View style={styles.skeletonBody}>
             <View style={styles.skeletonLineLarge} />
@@ -99,7 +121,7 @@ export default function ProductListScreen({
               <View style={styles.skeletonLineSmall} />
             </View>
           </View>
-        </View>
+        </View> : null}
       </ScrollView>
     </SafeAreaView>
   );
@@ -119,9 +141,13 @@ function ProductCard({
   return (
     <Link href={fichaShowRoute(product.id, originType, originId)} asChild>
       <Pressable style={styles.card}>
-        <View style={styles.imagePlaceholder}>
-          <FontAwesome name="cutlery" size={28} color="#c7c9cf" />
-        </View>
+        {product.imageUrl ? (
+          <Image source={{ uri: product.imageUrl }} resizeMode="contain" style={styles.imagePlaceholder} />
+        ) : (
+          <View style={styles.imagePlaceholder}>
+            <FontAwesome name="cutlery" size={28} color="#c7c9cf" />
+          </View>
+        )}
         <View style={styles.cardBody}>
           <Text style={styles.productName}>{product.name}</Text>
           <Text style={styles.maker}>{product.maker.toUpperCase()}</Text>
@@ -286,6 +312,18 @@ const styles = StyleSheet.create({
     color: '#7c808a',
     fontSize: 13,
     marginTop: 6,
+  },
+  retryButton: {
+    borderRadius: 8,
+    backgroundColor: '#087f23',
+    marginTop: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+  },
+  retryText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '800',
   },
   skeletonImage: {
     width: 94,
