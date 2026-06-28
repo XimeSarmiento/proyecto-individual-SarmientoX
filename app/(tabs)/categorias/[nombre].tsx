@@ -11,10 +11,10 @@ export default function CategoryProductsScreen() {
   const { nombre } = useLocalSearchParams<{ nombre: string }>();
   const category = categories.find((item) => item.id === nombre);
   const loader = useCallback(
-    (signal: AbortSignal) => getProductsByCategory(nombre ?? '', signal),
+    (page: number, signal: AbortSignal) => getProductsByCategory(nombre ?? '', page, signal),
     [nombre],
   );
-  const { products, loading, error, retry } = useProducts(loader);
+  const { products, loading, loadingMore, error, loadMoreError, retry, loadMore, retryLoadMore } = useProducts(loader);
 
   if (!category) {
     return <Redirect href={ROUTES.HOME} />;
@@ -31,6 +31,10 @@ export default function CategoryProductsScreen() {
       loading={loading}
       error={error}
       onRetry={retry}
+      loadingMore={loadingMore}
+      loadMoreError={loadMoreError}
+      onLoadMore={loadMore}
+      onRetryLoadMore={retryLoadMore}
     />
   );
 }

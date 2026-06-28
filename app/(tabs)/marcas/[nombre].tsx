@@ -11,10 +11,10 @@ export default function BrandProductsScreen() {
   const { nombre } = useLocalSearchParams<{ nombre: string }>();
   const brand = brands.find((item) => item.id === nombre);
   const loader = useCallback(
-    (signal: AbortSignal) => getProductsByBrand(nombre ?? '', signal),
+    (page: number, signal: AbortSignal) => getProductsByBrand(nombre ?? '', page, signal),
     [nombre],
   );
-  const { products, loading, error, retry } = useProducts(loader);
+  const { products, loading, loadingMore, error, loadMoreError, retry, loadMore, retryLoadMore } = useProducts(loader);
 
   if (!brand) {
     return <Redirect href={ROUTES.HOME} />;
@@ -31,6 +31,10 @@ export default function BrandProductsScreen() {
       loading={loading}
       error={error}
       onRetry={retry}
+      loadingMore={loadingMore}
+      loadMoreError={loadMoreError}
+      onLoadMore={loadMore}
+      onRetryLoadMore={retryLoadMore}
     />
   );
 }

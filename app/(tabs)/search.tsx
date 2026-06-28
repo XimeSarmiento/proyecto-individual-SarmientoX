@@ -1,11 +1,11 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Link } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  FlatList,
   Image,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -22,23 +22,46 @@ export default function SearchScreen() {
   const [query, setQuery] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadMoreError, setLoadMoreError] = useState(false);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const loadingMoreRef = useRef(false);
+  const loadMoreFailedRef = useRef(false);
+  const paginationControllerRef = useRef<AbortController | null>(null);
   const normalizedQuery = query.trim();
 
   useEffect(() => {
     if (normalizedQuery.length < 2) {
       setProducts([]);
       setLoading(false);
+      setLoadingMore(false);
       setError(null);
+      setLoadMoreError(false);
+      loadMoreFailedRef.current = false;
+      setPage(0);
+      setHasMore(false);
       return;
     }
 
     const controller = new AbortController();
+    paginationControllerRef.current?.abort();
+    loadingMoreRef.current = false;
+    setProducts([]);
+    setPage(0);
+    setHasMore(false);
+    setLoading(true);
+    setLoadingMore(false);
+    setError(null);
+    setLoadMoreError(false);
+    loadMoreFailedRef.current = false;
     const timeout = setTimeout(async () => {
-      setLoading(true);
-      setError(null);
       try {
-        setProducts(await searchProducts(normalizedQuery, controller.signal));
+        const result = await searchProducts(normalizedQuery, 1, controller.signal);
+        setProducts(result.products);
+        setPage(result.page);
+        setHasMore(result.hasMore);
       } catch (requestError) {
         if (!controller.signal.aborted) {
           setProducts([]);
@@ -52,40 +75,86 @@ export default function SearchScreen() {
     return () => {
       clearTimeout(timeout);
       controller.abort();
+      paginationControllerRef.current?.abort();
+      loadingMoreRef.current = false;
     };
   }, [normalizedQuery]);
+
+  const loadMore = useCallback(async () => {
+    if (!hasMore || loading || loadingMoreRef.current || loadMoreFailedRef.current || normalizedQuery.length < 2) return;
+
+    const controller = new AbortController();
+    paginationControllerRef.current?.abort();
+    paginationControllerRef.current = controller;
+    loadingMoreRef.current = true;
+    setLoadingMore(true);
+    setLoadMoreError(false);
+
+    try {
+      const result = await searchProducts(normalizedQuery, page + 1, controller.signal);
+      setProducts((current) => {
+        const existingIds = new Set(current.map((product) => product.id));
+        return [...current, ...result.products.filter((product) => !existingIds.has(product.id))];
+      });
+      setPage(result.page);
+      setHasMore(result.hasMore);
+    } catch {
+      if (!controller.signal.aborted) {
+        loadMoreFailedRef.current = true;
+        setLoadMoreError(true);
+      }
+    } finally {
+      if (!controller.signal.aborted) {
+        loadingMoreRef.current = false;
+        setLoadingMore(false);
+      }
+    }
+  }, [hasMore, loading, normalizedQuery, page]);
+
+  const retryLoadMore = useCallback(() => {
+    loadMoreFailedRef.current = false;
+    void loadMore();
+  }, [loadMore]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <AppHeader />
-      <ScrollView
+      <FlatList
+        data={products}
+        keyExtractor={(product) => product.id}
+        renderItem={({ item }) => <ProductResult product={item} />}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>Buscar productos</Text>
-        <Text style={styles.subtitle}>Datos provistos por Open Food Facts</Text>
-
-        <View style={styles.searchBox}>
-          <FontAwesome name="search" size={21} color="#777b84" />
-          <TextInput
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoFocus
-            onChangeText={setQuery}
-            placeholder="Nombre, marca o código de barras"
-            placeholderTextColor="#969aa3"
-            returnKeyType="search"
-            style={styles.input}
-            value={query}
-          />
-          {query ? (
-            <Pressable hitSlop={10} onPress={() => setQuery('')}>
-              <FontAwesome name="times-circle" size={19} color="#a9adb5" />
-            </Pressable>
-          ) : null}
-        </View>
-
-        {loading ? (
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ListHeaderComponent={(
+          <>
+            <Text style={styles.title}>Buscar productos</Text>
+            <Text style={styles.subtitle}>Datos provistos por Open Food Facts</Text>
+            <View style={styles.searchBox}>
+              <FontAwesome name="search" size={21} color="#777b84" />
+              <TextInput
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoFocus
+                onChangeText={setQuery}
+                placeholder="Nombre, marca o código de barras"
+                placeholderTextColor="#969aa3"
+                returnKeyType="search"
+                style={styles.input}
+                value={query}
+              />
+              {query ? (
+                <Pressable hitSlop={10} onPress={() => setQuery('')}>
+                  <FontAwesome name="times-circle" size={19} color="#a9adb5" />
+                </Pressable>
+              ) : null}
+            </View>
+            {!loading && !error && products.length > 0 ? (
+              <Text style={styles.resultCount}>{products.length} RESULTADOS CARGADOS</Text>
+            ) : null}
+          </>
+        )}
+        ListEmptyComponent={loading ? (
           <View style={styles.stateBox}>
             <ActivityIndicator color="#087f23" size="large" />
             <Text style={styles.stateText}>Buscando productos…</Text>
@@ -107,17 +176,18 @@ export default function SearchScreen() {
             <Text style={styles.stateTitle}>Sin resultados</Text>
             <Text style={styles.stateText}>Probá con otro nombre, marca o código.</Text>
           </View>
-        ) : (
-          <>
-            <Text style={styles.resultCount}>{products.length} RESULTADOS</Text>
-            <View style={styles.productList}>
-              {products.map((product) => (
-                <ProductResult key={product.id} product={product} />
-              ))}
-            </View>
-          </>
-        )}
-      </ScrollView>
+        ) : null}
+        ListFooterComponent={loadingMore ? (
+          <ActivityIndicator color="#087f23" style={styles.footer} />
+        ) : loadMoreError ? (
+          <Pressable onPress={retryLoadMore} style={styles.retryButton}>
+            <Text style={styles.retryText}>No se pudo cargar más. Reintentar</Text>
+          </Pressable>
+        ) : null}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.4}
+        showsVerticalScrollIndicator={false}
+      />
     </SafeAreaView>
   );
 }
@@ -165,7 +235,10 @@ const styles = StyleSheet.create({
   stateTitle: { color: '#26282d', fontSize: 17, fontWeight: '800', marginTop: 12, textAlign: 'center' },
   stateText: { color: '#747881', fontSize: 13, lineHeight: 19, marginTop: 9, textAlign: 'center' },
   resultCount: { color: '#71727c', fontSize: 11, letterSpacing: 1.5, marginVertical: 18 },
-  productList: { rowGap: 10 },
+  separator: { height: 10 },
+  footer: { marginVertical: 22 },
+  retryButton: { alignItems: 'center', marginVertical: 18, paddingVertical: 10 },
+  retryText: { color: '#087f23', fontSize: 12, fontWeight: '800' },
   card: {
     minHeight: 116,
     flexDirection: 'row',

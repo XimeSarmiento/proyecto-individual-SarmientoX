@@ -31,26 +31,48 @@ type OffProduct = {
   nutriments?: Record<string, string | number | undefined>;
 };
 
-type SearchResponse = { products?: OffProduct[] };
+type SearchResponse = {
+  count?: number;
+  page?: number;
+  page_count?: number;
+  page_size?: number;
+  products?: OffProduct[];
+};
 type ProductResponse = { status?: number; product?: OffProduct };
 
-export async function searchProducts(query: string, signal?: AbortSignal): Promise<Product[]> {
-  return requestProducts({ search_terms: query }, signal);
+export type ProductPage = {
+  products: Product[];
+  page: number;
+  hasMore: boolean;
+};
+
+export async function searchProducts(
+  query: string,
+  page = 1,
+  signal?: AbortSignal,
+): Promise<ProductPage> {
+  return requestProductPage({ search_terms: query }, page, 10, signal);
 }
 
-export async function getProductsByCategory(category: string, signal?: AbortSignal) {
-  return requestProducts({ categories_tags_en: category }, signal);
+export async function getProductsByCategory(category: string, page = 1, signal?: AbortSignal) {
+  return requestProductPage({ categories_tags_en: category }, page, 10, signal);
 }
 
-export async function getProductsByBrand(brand: string, signal?: AbortSignal) {
-  return requestProducts({ brands_tags: brand }, signal);
+export async function getProductsByBrand(brand: string, page = 1, signal?: AbortSignal) {
+  return requestProductPage({ brands_tags: brand }, page, 10, signal);
 }
 
-async function requestProducts(filters: Record<string, string>, signal?: AbortSignal) {
+async function requestProductPage(
+  filters: Record<string, string>,
+  page: number,
+  pageSize: number,
+  signal?: AbortSignal,
+): Promise<ProductPage> {
   const params = new URLSearchParams({
     ...filters,
     fields: PRODUCT_FIELDS,
-    page_size: '20',
+    page: String(page),
+    page_size: String(pageSize),
     json: '1',
   });
   const response = await fetch(`${API_BASE_URL}/v2/search?${params}`, {
@@ -63,7 +85,13 @@ async function requestProducts(filters: Record<string, string>, signal?: AbortSi
   }
 
   const data = (await response.json()) as SearchResponse;
-  return (data.products ?? []).filter(hasIdentity).map(mapProduct);
+  const responsePage = data.page ?? page;
+  const pageCount = data.page_count ?? 0;
+  return {
+    products: (data.products ?? []).filter(hasIdentity).map(mapProduct),
+    page: responsePage,
+    hasMore: pageCount ? responsePage < pageCount : (data.products?.length ?? 0) === pageSize,
+  };
 }
 
 export async function getProduct(code: string, signal?: AbortSignal): Promise<Product | null> {

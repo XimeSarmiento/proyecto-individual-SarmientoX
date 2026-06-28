@@ -1,7 +1,7 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Link } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Product } from '@/src/data/catalog';
@@ -18,6 +18,10 @@ type ProductListScreenProps = {
   loading?: boolean;
   error?: string | null;
   onRetry?: () => void;
+  loadingMore?: boolean;
+  loadMoreError?: boolean;
+  onLoadMore?: () => void;
+  onRetryLoadMore?: () => void;
 };
 
 export default function ProductListScreen({
@@ -30,6 +34,10 @@ export default function ProductListScreen({
   loading = false,
   error,
   onRetry,
+  loadingMore = false,
+  loadMoreError = false,
+  onLoadMore,
+  onRetryLoadMore,
 }: ProductListScreenProps) {
   const [query, setQuery] = useState('');
   const normalizedQuery = query.trim().toLowerCase();
@@ -51,32 +59,39 @@ export default function ProductListScreen({
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <AppHeader />
 
-      <ScrollView
+      <FlatList
+        data={loading || error ? [] : filteredProducts}
+        keyExtractor={(product) => product.id}
+        renderItem={({ item }) => (
+          <ProductCard product={item} originType={originType} originId={originId} />
+        )}
         style={styles.scroll}
         contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.count}>{resultLabel}</Text>
-
-        <View style={styles.searchBox}>
-          <FontAwesome name="search" size={24} color="#9c9fa9" />
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder={placeholder}
-            placeholderTextColor="#9c9fa9"
-            returnKeyType="search"
-            autoCorrect={false}
-            style={styles.searchInput}
-          />
-          {query ? (
-            <Pressable onPress={() => setQuery('')} hitSlop={8}>
-              <FontAwesome name="times-circle" size={18} color="#b6bac3" />
-            </Pressable>
-          ) : null}
-        </View>
-
-        {loading ? (
+        ItemSeparatorComponent={() => <View style={styles.productSeparator} />}
+        ListHeaderComponent={(
+          <>
+            <Text style={styles.title}>{title}</Text>
+            <Text style={styles.count}>{resultLabel}</Text>
+            <View style={styles.searchBox}>
+              <FontAwesome name="search" size={24} color="#9c9fa9" />
+              <TextInput
+                value={query}
+                onChangeText={setQuery}
+                placeholder={placeholder}
+                placeholderTextColor="#9c9fa9"
+                returnKeyType="search"
+                autoCorrect={false}
+                style={styles.searchInput}
+              />
+              {query ? (
+                <Pressable onPress={() => setQuery('')} hitSlop={8}>
+                  <FontAwesome name="times-circle" size={18} color="#b6bac3" />
+                </Pressable>
+              ) : null}
+            </View>
+          </>
+        )}
+        ListEmptyComponent={loading ? (
           <View style={styles.emptyState}>
             <ActivityIndicator size="large" color="#087f23" />
             <Text style={styles.emptyText}>Cargando productos…</Text>
@@ -92,17 +107,6 @@ export default function ProductListScreen({
               </Pressable>
             ) : null}
           </View>
-        ) : filteredProducts.length ? (
-          <View style={styles.productStack}>
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                originType={originType}
-                originId={originId}
-              />
-            ))}
-          </View>
         ) : (
           <View style={styles.emptyState}>
             <FontAwesome name="search" size={22} color="#a9adb5" />
@@ -110,19 +114,17 @@ export default function ProductListScreen({
             <Text style={styles.emptyText}>Try another name or maker.</Text>
           </View>
         )}
-
-        {!loading && !error ? <View style={styles.skeleton}>
-          <View style={styles.skeletonImage} />
-          <View style={styles.skeletonBody}>
-            <View style={styles.skeletonLineLarge} />
-            <View style={styles.skeletonLineMedium} />
-            <View style={styles.skeletonBottomRow}>
-              <View style={styles.skeletonLineSmall} />
-              <View style={styles.skeletonLineSmall} />
-            </View>
-          </View>
-        </View> : null}
-      </ScrollView>
+        ListFooterComponent={loadingMore ? (
+          <ActivityIndicator color="#087f23" style={styles.listFooter} />
+        ) : loadMoreError && onRetryLoadMore ? (
+          <Pressable onPress={onRetryLoadMore} style={styles.loadMoreRetry}>
+            <Text style={styles.loadMoreRetryText}>No se pudo cargar más. Reintentar</Text>
+          </Pressable>
+        ) : null}
+        onEndReached={onLoadMore}
+        onEndReachedThreshold={0.4}
+        showsVerticalScrollIndicator={false}
+      />
     </SafeAreaView>
   );
 }
@@ -212,6 +214,22 @@ const styles = StyleSheet.create({
   },
   productStack: {
     rowGap: 10,
+  },
+  productSeparator: {
+    height: 10,
+  },
+  listFooter: {
+    marginVertical: 22,
+  },
+  loadMoreRetry: {
+    alignItems: 'center',
+    marginVertical: 18,
+    paddingVertical: 10,
+  },
+  loadMoreRetryText: {
+    color: '#087f23',
+    fontSize: 12,
+    fontWeight: '800',
   },
   card: {
     minHeight: 128,
