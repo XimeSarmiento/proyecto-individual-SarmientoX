@@ -1,6 +1,18 @@
 import type { Product } from '@/src/data/catalog';
 
 const API_BASE_URL = 'https://world.openfoodfacts.org/api';
+const CACHE_TTL_MS = 2 * 60 * 1000;
+const responseCache = new Map<string, { expiresAt: number; data: unknown }>();
+const NUTRITION_KEYS = [
+  'energy-kj_100g',
+  'fat_100g',
+  'saturated-fat_100g',
+  'carbohydrates_100g',
+  'sugars_100g',
+  'fiber_100g',
+  'proteins_100g',
+  'salt_100g',
+] as const;
 const PRODUCT_FIELDS = [
   'code',
   'product_name',
@@ -106,16 +118,8 @@ async function requestTextSearch(
     params.set('tag_0', tag.value);
   }
 
-  const response = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?${params}`, {
-    headers: { Accept: 'application/json' },
-    signal,
-  });
-
-  if (!response.ok) {
-    throw new Error(`Open Food Facts respondió con estado ${response.status}`);
-  }
-
-  return mapProductPage((await response.json()) as SearchResponse, page, pageSize);
+  const data = await requestJson<SearchResponse>(`https://world.openfoodfacts.org/cgi/search.pl?${params}`, signal);
+  return mapProductPage(data, page, pageSize);
 }
 
 async function requestProductPage(
@@ -131,16 +135,8 @@ async function requestProductPage(
     page_size: String(pageSize),
     json: '1',
   });
-  const response = await fetch(`${API_BASE_URL}/v2/search?${params}`, {
-    headers: { Accept: 'application/json' },
-    signal,
-  });
-
-  if (!response.ok) {
-    throw new Error(`Open Food Facts respondió con estado ${response.status}`);
-  }
-
-  return mapProductPage((await response.json()) as SearchResponse, page, pageSize);
+  const data = await requestJson<SearchResponse>(`${API_BASE_URL}/v2/search?${params}`, signal);
+  return mapProductPage(data, page, pageSize);
 }
 
 function mapProductPage(data: SearchResponse, page: number, pageSize: number): ProductPage {
@@ -155,16 +151,10 @@ function mapProductPage(data: SearchResponse, page: number, pageSize: number): P
 
 export async function getProduct(code: string, signal?: AbortSignal): Promise<Product | null> {
   const params = new URLSearchParams({ fields: PRODUCT_FIELDS });
-  const response = await fetch(`${API_BASE_URL}/v2/product/${encodeURIComponent(code)}?${params}`, {
-    headers: { Accept: 'application/json' },
+  const data = await requestJson<ProductResponse>(
+    `${API_BASE_URL}/v2/product/${encodeURIComponent(code)}?${params}`,
     signal,
-  });
-
-  if (!response.ok) {
-    throw new Error(`Open Food Facts respondió con estado ${response.status}`);
-  }
-
-  const data = (await response.json()) as ProductResponse;
+  );
   return data.status === 1 && data.product && hasIdentity(data.product)
     ? mapProduct(data.product)
     : null;
@@ -177,8 +167,8 @@ function hasIdentity(product: OffProduct): product is OffProduct & { code: strin
 function mapProduct(product: OffProduct & { code: string }): Product {
   const nutriments = product.nutriments ?? {};
   const ingredients = product.ingredients_text?.trim();
-  const hasNutritionInfo = Object.values(nutriments).some(
-    (nutriment) => nutriment !== undefined && nutriment !== '',
+  const hasNutritionInfo = NUTRITION_KEYS.some(
+    (key) => nutriments[key] !== undefined && nutriments[key] !== '',
   );
   const value = (key: string, unit = 'g') => formatNutriment(nutriments[key], unit);
   const energyKj = value('energy-kj_100g', 'kJ');
@@ -212,6 +202,22 @@ function mapProduct(product: OffProduct & { code: string }): Product {
       { label: 'Sal', value: value('salt_100g') },
     ],
   };
+}
+
+async function requestJson<T>(url: string, signal?: AbortSignal): Promise<T> {
+  const cached = responseCache.get(url);
+  if (cached && cached.expiresAt > Date.now()) return cached.data as T;
+  if (cached) responseCache.delete(url);
+
+  const response = await fetch(url, { headers: { Accept: 'application/json' }, signal });
+  if (!response.ok) {
+    throw new Error(`Open Food Facts respondió con estado ${response.status}`);
+  }
+
+  const data = await response.json() as T;
+  if (responseCache.size >= 50) responseCache.delete(responseCache.keys().next().value!);
+  responseCache.set(url, { data, expiresAt: Date.now() + CACHE_TTL_MS });
+  return data;
 }
 
 function formatNutriment(value: string | number | undefined, unit: string) {
