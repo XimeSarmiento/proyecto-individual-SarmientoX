@@ -1,42 +1,23 @@
 import { Redirect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
 
-import ProductListScreen from '@/src/components/ProductListScreen';
+import FilteredProductsScreen from '@/src/components/FilteredProductsScreen';
 import { categories } from '@/src/data/catalog';
-import { useProducts } from '@/src/hooks/useProducts';
 import { ROUTES } from '@/src/navigation/routes';
 import { getProductsByCategory } from '@/src/services/openFoodFacts';
 
 export default function CategoryProductsScreen() {
   const { nombre } = useLocalSearchParams<{ nombre: string }>();
   const category = categories.find((item) => item.id === nombre);
-  const [query, setQuery] = useState('');
-  const loader = useCallback(
-    (page: number, signal: AbortSignal) => getProductsByCategory(nombre ?? '', page, signal, query),
-    [nombre, query],
-  );
-  const { products, loading, loadingMore, error, loadMoreError, retry, loadMore, retryLoadMore } = useProducts(loader);
-
-  if (!category) {
-    return <Redirect href={ROUTES.HOME} />;
-  }
+  if (!category) return <Redirect href={ROUTES.HOME} />;
 
   return (
-    <ProductListScreen
+    <FilteredProductsScreen
       title={category.title}
-      countLabel={`${products.length} ITEMS FOUND`}
+      countNoun="ITEMS FOUND"
       placeholder={`Search ${category.label.replaceAll('-', ' ')}`}
-      products={products}
       originType="categoria"
       originId={category.id}
-      loading={loading}
-      error={error}
-      onRetry={retry}
-      loadingMore={loadingMore}
-      loadMoreError={loadMoreError}
-      onLoadMore={loadMore}
-      onRetryLoadMore={retryLoadMore}
-      onSearchChange={setQuery}
+      loadPage={getProductsByCategory}
     />
   );
 }

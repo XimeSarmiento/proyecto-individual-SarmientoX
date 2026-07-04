@@ -1,51 +1,23 @@
 import { Redirect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
 
-import ProductListScreen from '@/src/components/ProductListScreen';
+import FilteredProductsScreen from '@/src/components/FilteredProductsScreen';
 import { tastes } from '@/src/data/catalog';
-import { useProducts } from '@/src/hooks/useProducts';
 import { ROUTES } from '@/src/navigation/routes';
 import { getProductsByTaste } from '@/src/services/openFoodFacts';
 
 export default function TasteProductsScreen() {
   const { nombre } = useLocalSearchParams<{ nombre: string }>();
   const taste = tastes.find((item) => item.id === nombre);
-  const [query, setQuery] = useState('');
-  const loader = useCallback(
-    (page: number, signal: AbortSignal) => getProductsByTaste(nombre ?? '', page, signal, query),
-    [nombre, query],
-  );
-  const {
-    products,
-    loading,
-    loadingMore,
-    error,
-    loadMoreError,
-    retry,
-    loadMore,
-    retryLoadMore,
-  } = useProducts(loader);
-
-  if (!taste) {
-    return <Redirect href={ROUTES.HOME} />;
-  }
+  if (!taste) return <Redirect href={ROUTES.HOME} />;
 
   return (
-    <ProductListScreen
+    <FilteredProductsScreen
       title={taste.title}
-      countLabel={`${products.length} PRODUCTS`}
+      countNoun="PRODUCTS"
       placeholder={`Search ${taste.title.toLowerCase()} products`}
-      products={products}
       originType="taste"
       originId={taste.id}
-      loading={loading}
-      error={error}
-      onRetry={retry}
-      loadingMore={loadingMore}
-      loadMoreError={loadMoreError}
-      onLoadMore={loadMore}
-      onRetryLoadMore={retryLoadMore}
-      onSearchChange={setQuery}
+      loadPage={getProductsByTaste}
     />
   );
 }
