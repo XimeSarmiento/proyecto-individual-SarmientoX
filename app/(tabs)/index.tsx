@@ -10,7 +10,7 @@ import { buildRoute, ROUTES } from '@/src/navigation/routes';
 export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <AppHeader />
+      <AppHeader leftIcon={null} rightIcon="profile" />
 
       <ScrollView
         style={styles.scroll}

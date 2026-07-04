@@ -2,36 +2,38 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 type AppHeaderProps = {
-  leftIcon?: 'bars' | 'arrow-left';
-  rightIcon?: 'profile' | 'share';
+  leftIcon?: 'bars' | 'arrow-left' | null;
+  rightIcon?: 'profile';
   onLeftPress?: () => void;
   title?: string;
 };
 
 export default function AppHeader({
   leftIcon = 'bars',
-  rightIcon = 'profile',
+  rightIcon,
   onLeftPress,
   title = 'Digital Epicurean',
 }: AppHeaderProps) {
   return (
     <View style={styles.header}>
-      <Pressable style={styles.sideButton} onPress={onLeftPress} hitSlop={10}>
-        <FontAwesome name={leftIcon} size={20} color="#00591c" />
-      </Pressable>
+      {leftIcon ? (
+        <Pressable style={styles.sideButton} onPress={onLeftPress} hitSlop={10}>
+          <FontAwesome name={leftIcon} size={20} color="#00591c" />
+        </Pressable>
+      ) : (
+        <View style={styles.sideButton} />
+      )}
 
       <Text style={styles.title} numberOfLines={1}>
         {title}
       </Text>
 
-      {rightIcon === 'share' ? (
-        <Pressable style={styles.sideButton} hitSlop={10}>
-          <FontAwesome name="share-alt" size={18} color="#00591c" />
-        </Pressable>
-      ) : ( 
+      {rightIcon === 'profile' ? (
         <View style={styles.sideButton}>
-            <FontAwesome name="user-circle-o" size={18} color="#00591c" />
+          <FontAwesome name="user-circle-o" size={18} color="#00591c" />
         </View>
+      ) : (
+        <View style={styles.sideButton} />
       )}
     </View>
   );

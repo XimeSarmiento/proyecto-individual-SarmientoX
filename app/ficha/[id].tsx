@@ -63,7 +63,6 @@ export default function ProductDetailScreen() {
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <AppHeader
         leftIcon="arrow-left"
-        rightIcon="share"
         onLeftPress={() => goBackToOrigin(originType, originId)}
       />
 
