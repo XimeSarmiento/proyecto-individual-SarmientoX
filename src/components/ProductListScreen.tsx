@@ -1,12 +1,13 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Product } from '@/src/data/catalog';
-import { fichaShowRoute, ROUTES } from '@/src/navigation/routes';
+import { ROUTES } from '@/src/navigation/routes';
 import AppHeader from './AppHeader';
+import ProductCard from './ProductCard';
 
 type ProductListScreenProps = {
   title: string;
@@ -130,45 +131,6 @@ export default function ProductListScreen({
   );
 }
 
-function ProductCard({
-  product,
-  originType,
-  originId,
-}: {
-  product: Product;
-  originType: 'categoria' | 'marca' | 'taste';
-  originId: string;
-}) {
-  const nutriColor = product.nutriScore === 'C' ? '#f1b600' : product.nutriScore === 'B' ? '#22c765' : '#08a347';
-
-  return (
-    <Link href={fichaShowRoute(product.id, originType, originId)} asChild>
-      <Pressable style={styles.card}>
-        {product.imageUrl ? (
-          <Image source={{ uri: product.imageUrl }} resizeMode="contain" style={styles.imagePlaceholder} />
-        ) : (
-          <View style={styles.imagePlaceholder}>
-            <FontAwesome name="cutlery" size={28} color="#c7c9cf" />
-          </View>
-        )}
-        <View style={styles.cardBody}>
-          <Text style={styles.productName}>{product.name}</Text>
-          <Text style={styles.maker}>{product.maker.toUpperCase()}</Text>
-          <View style={styles.scoreRow}>
-            <View style={{ ...styles.nutriBadge, backgroundColor: nutriColor }}>
-              <Text style={styles.nutriText}>NUTRI-{'\n'}SCORE {product.nutriScore}</Text>
-            </View>
-            <View style={styles.ecoBadge}>
-              <Text style={styles.ecoText}>ECO-SCORE{'\n'}{product.ecoScore}</Text>
-            </View>
-          </View>
-        </View>
-        <FontAwesome name="chevron-right" size={22} color="#d1d3d8" />
-      </Pressable>
-    </Link>
-  );
-}
-
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -231,78 +193,6 @@ const styles = StyleSheet.create({
     color: '#087f23',
     fontSize: 12,
     fontWeight: '800',
-  },
-  card: {
-    minHeight: 128,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 12,
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 1,
-  },
-  imagePlaceholder: {
-    width: 68,
-    height: 68,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-    backgroundColor: '#eef0f2',
-    marginRight: 12,
-  },
-  cardBody: {
-    flex: 1,
-    minWidth: 0,
-  },
-  productName: {
-    color: '#050505',
-    fontSize: 16,
-    fontWeight: '800',
-    lineHeight: 20,
-  },
-  maker: {
-    color: '#6d6e75',
-    fontSize: 10,
-    marginTop: 3,
-  },
-  scoreRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    columnGap: 6,
-    rowGap: 6,
-    marginTop: 9,
-  },
-  nutriBadge: {
-    minWidth: 72,
-    minHeight: 34,
-    justifyContent: 'center',
-    borderRadius: 2,
-    paddingHorizontal: 8,
-  },
-  nutriText: {
-    color: '#ffffff',
-    fontSize: 9,
-    fontWeight: '900',
-    lineHeight: 12,
-  },
-  ecoBadge: {
-    minWidth: 72,
-    minHeight: 34,
-    justifyContent: 'center',
-    borderRadius: 2,
-    backgroundColor: '#c9efc4',
-    paddingHorizontal: 8,
-  },
-  ecoText: {
-    color: '#4f6a52',
-    fontSize: 9,
-    fontWeight: '800',
-    lineHeight: 12,
   },
   skeleton: {
     minHeight: 150,

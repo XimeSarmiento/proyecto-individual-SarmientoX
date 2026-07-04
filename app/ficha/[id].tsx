@@ -5,6 +5,8 @@ import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AppHeader from '@/src/components/AppHeader';
+import ProductInformationCards from '@/src/components/ProductInformationCards';
+import { GradeBadge, NovaBadge } from '@/src/components/ScoreBadge';
 import { products, type Product } from '@/src/data/catalog';
 import { buildRoute, ROUTES } from '@/src/navigation/routes';
 import { getProduct } from '@/src/services/openFoodFacts';
@@ -83,7 +85,7 @@ export default function ProductDetailScreen() {
           <View style={styles.scoreCards}>
             <View style={styles.scoreCard}>
               <Text style={styles.scoreLabel}>NUTRI-{'\n'}SCORE</Text>
-              <ScoreBadge kind="nutri" value={product.nutriScore} />
+              <GradeBadge kind="nutri" value={product.nutriScore} />
             </View>
             <View style={styles.scoreCard}>
               <Text style={styles.scoreLabel}>NOVA{'\n'}GROUP</Text>
@@ -91,7 +93,7 @@ export default function ProductDetailScreen() {
             </View>
             <View style={styles.scoreCard}>
               <Text style={styles.scoreLabel}>ECO-{'\n'}SCORE</Text>
-              <ScoreBadge kind="eco" value={product.ecoScore} />
+              <GradeBadge kind="eco" value={product.ecoScore} />
             </View>
           </View>
 
@@ -102,38 +104,7 @@ export default function ProductDetailScreen() {
           </View>
         </View>
 
-        <View style={styles.ingredientsCard}>
-          <View style={styles.blockTitleRow}>
-            <FontAwesome name="sliders" size={18} color="#087f23" style={styles.blockTitleIcon} />
-            <Text style={styles.blockTitle}>Ingredients</Text>
-          </View>
-          {product.hasIngredients ? (
-            <Text style={styles.ingredientsText}>{product.ingredients}</Text>
-          ) : (
-            <MissingInformation />
-          )}
-          <View style={styles.allergenBox}>
-            <FontAwesome name="warning" size={18} color="#c70018" />
-            <View style={styles.allergenTextBlock}>
-              <Text style={styles.allergenTitle}>ALLERGEN INFORMATION</Text>
-              <Text style={styles.allergenText}>{product.allergens}</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.nutritionCard}>
-          <Text style={styles.nutritionTitle}>Nutritional Values (per 100ml)</Text>
-          {product.hasNutritionInfo ? (
-            product.nutrition.map((item) => (
-              <View key={`${item.label}-${item.value}`} style={styles.nutritionRow}>
-                <Text style={item.detail ? styles.nutritionDetailLabel : styles.nutritionLabel}>{item.label}</Text>
-                <Text style={styles.nutritionValue}>{item.value}</Text>
-              </View>
-            ))
-          ) : (
-            <MissingInformation />
-          )}
-        </View>
+        <ProductInformationCards product={product} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -168,69 +139,6 @@ function Metric({ label, value }: { label: string; value: string }) {
     <View style={styles.metric}>
       <Text style={styles.metricLabel}>{label}</Text>
       <Text style={styles.metricValue}>{value}</Text>
-    </View>
-  );
-}
-
-function MissingInformation() {
-  return (
-    <View style={styles.missingInformation}>
-      <FontAwesome name="info-circle" size={22} color="#8b9098" />
-      <Text style={styles.missingInformationText}>Sin información</Text>
-    </View>
-  );
-}
-
-const SCORE_COLORS = {
-  nutri: {
-    A: '#038141',
-    B: '#85bb2f',
-    C: '#fecb02',
-    D: '#ee8100',
-    E: '#e63e11',
-    '-': '#9b9b9b',
-  },
-  eco: {
-    'A+': '#047d3f',
-    A: '#1e9b50',
-    'B+': '#69ad45',
-    B: '#85bb2f',
-    C: '#f5b921',
-    D: '#ef7d20',
-    E: '#df292f',
-    '-': '#9b9b9b',
-  },
-} as const;
-
-function ScoreBadge({
-  kind,
-  value,
-}: {
-  kind: 'nutri' | 'eco';
-  value: Product['nutriScore'] | Product['ecoScore'];
-}) {
-  const colors = SCORE_COLORS[kind] as Record<string, string>;
-  const darkText = value === 'C';
-
-  return (
-    <View style={[styles.gradeScore, { backgroundColor: colors[value] ?? colors['-'] }]}>
-      <Text style={[styles.scoreValue, darkText && styles.scoreValueDark]}>{value}</Text>
-    </View>
-  );
-}
-
-const NOVA_COLORS: Record<Product['novaGroup'], string> = {
-  1: '#a9ca45',
-  2: '#f5a33a',
-  3: '#ff7133',
-  4: '#08b9dd',
-  '?': '#9b9b9b',
-};
-
-function NovaBadge({ value }: { value: Product['novaGroup'] }) {
-  return (
-    <View style={[styles.gradeScore, { backgroundColor: NOVA_COLORS[value] }]}>
-      <Text style={styles.scoreValue}>{value}</Text>
     </View>
   );
 }
@@ -323,23 +231,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     textTransform: 'uppercase',
   },
-  gradeScore: {
-    minWidth: 28,
-    height: 25,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 5,
-    marginTop: 5,
-    paddingHorizontal: 6,
-  },
-  scoreValue: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '900',
-  },
-  scoreValueDark: {
-    color: '#1e1e1e',
-  },
   metricRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -365,109 +256,5 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     marginTop: 3,
-  },
-  ingredientsCard: {
-    borderRadius: 16,
-    backgroundColor: '#f0f1f3',
-    marginHorizontal: 16,
-    marginTop: 18,
-    padding: 18,
-  },
-  blockTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  blockTitleIcon: {
-    marginRight: 12,
-  },
-  blockTitle: {
-    color: '#111111',
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  ingredientsText: {
-    color: '#222222',
-    fontSize: 12,
-    lineHeight: 18,
-  },
-  missingInformation: {
-    minHeight: 70,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 10,
-    backgroundColor: '#e5e7e9',
-    padding: 14,
-  },
-  missingInformationText: {
-    color: '#747981',
-    fontSize: 12,
-    fontWeight: '700',
-    marginTop: 7,
-  },
-  allergenBox: {
-    flexDirection: 'row',
-    borderRadius: 10,
-    backgroundColor: '#fff0ef',
-    marginTop: 16,
-    padding: 12,
-  },
-  allergenTextBlock: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  allergenTitle: {
-    color: '#c70018',
-    fontSize: 9,
-    fontWeight: '900',
-    letterSpacing: 0.5,
-  },
-  allergenText: {
-    color: '#c70018',
-    fontSize: 11,
-    lineHeight: 16,
-    marginTop: 4,
-  },
-  nutritionCard: {
-    borderRadius: 16,
-    backgroundColor: '#ffffff',
-    marginHorizontal: 16,
-    marginTop: 16,
-    padding: 18,
-  },
-  nutritionTitle: {
-    color: '#111111',
-    fontSize: 16,
-    fontWeight: '800',
-    marginBottom: 12,
-  },
-  nutritionRow: {
-    minHeight: 34,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    columnGap: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eeeeee',
-  },
-  nutritionLabel: {
-    flex: 1,
-    minWidth: 0,
-    color: '#333333',
-    fontSize: 12,
-  },
-  nutritionDetailLabel: {
-    flex: 1,
-    minWidth: 0,
-    color: '#4d4d4d',
-    fontSize: 10,
-    fontStyle: 'italic',
-    marginLeft: 12,
-  },
-  nutritionValue: {
-    color: '#111111',
-    fontSize: 12,
-    fontWeight: '800',
-    textAlign: 'right',
   },
 });
