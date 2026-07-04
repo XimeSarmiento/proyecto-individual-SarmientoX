@@ -84,21 +84,15 @@ export default function ProductDetailScreen() {
           <View style={styles.scoreCards}>
             <View style={styles.scoreCard}>
               <Text style={styles.scoreLabel}>NUTRI-{'\n'}SCORE</Text>
-              <View style={styles.greenScore}>
-                <Text style={styles.scoreValue}>{product.nutriScore}</Text>
-              </View>
+              <ScoreBadge kind="nutri" value={product.nutriScore} />
             </View>
             <View style={styles.scoreCard}>
               <Text style={styles.scoreLabel}>NOVA{'\n'}GROUP</Text>
-              <View style={styles.yellowScore}>
-                <Text style={styles.scoreValueDark}>{product.novaGroup}</Text>
-              </View>
+              <NovaBadge value={product.novaGroup} />
             </View>
             <View style={styles.scoreCard}>
               <Text style={styles.scoreLabel}>ECO-{'\n'}SCORE</Text>
-              <View style={styles.greenScore}>
-                <Text style={styles.scoreValue}>{product.ecoScore}</Text>
-              </View>
+              <ScoreBadge kind="eco" value={product.ecoScore} />
             </View>
           </View>
 
@@ -167,6 +161,60 @@ function Metric({ label, value }: { label: string; value: string }) {
     <View style={styles.metric}>
       <Text style={styles.metricLabel}>{label}</Text>
       <Text style={styles.metricValue}>{value}</Text>
+    </View>
+  );
+}
+
+const SCORE_COLORS = {
+  nutri: {
+    A: '#038141',
+    B: '#85bb2f',
+    C: '#fecb02',
+    D: '#ee8100',
+    E: '#e63e11',
+    '-': '#9b9b9b',
+  },
+  eco: {
+    'A+': '#047d3f',
+    A: '#1e9b50',
+    'B+': '#69ad45',
+    B: '#85bb2f',
+    C: '#f5b921',
+    D: '#ef7d20',
+    E: '#df292f',
+    '-': '#9b9b9b',
+  },
+} as const;
+
+function ScoreBadge({
+  kind,
+  value,
+}: {
+  kind: 'nutri' | 'eco';
+  value: Product['nutriScore'] | Product['ecoScore'];
+}) {
+  const colors = SCORE_COLORS[kind] as Record<string, string>;
+  const darkText = value === 'C';
+
+  return (
+    <View style={[styles.gradeScore, { backgroundColor: colors[value] ?? colors['-'] }]}>
+      <Text style={[styles.scoreValue, darkText && styles.scoreValueDark]}>{value}</Text>
+    </View>
+  );
+}
+
+const NOVA_COLORS: Record<Product['novaGroup'], string> = {
+  1: '#a9ca45',
+  2: '#f5a33a',
+  3: '#ff7133',
+  4: '#08b9dd',
+  '?': '#9b9b9b',
+};
+
+function NovaBadge({ value }: { value: Product['novaGroup'] }) {
+  return (
+    <View style={[styles.gradeScore, { backgroundColor: NOVA_COLORS[value] }]}>
+      <Text style={styles.scoreValue}>{value}</Text>
     </View>
   );
 }
@@ -259,23 +307,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     textTransform: 'uppercase',
   },
-  greenScore: {
+  gradeScore: {
     minWidth: 28,
     height: 25,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 5,
-    backgroundColor: '#08a347',
-    marginTop: 5,
-    paddingHorizontal: 6,
-  },
-  yellowScore: {
-    minWidth: 28,
-    height: 25,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 5,
-    backgroundColor: '#f1c400',
     marginTop: 5,
     paddingHorizontal: 6,
   },
@@ -286,8 +323,6 @@ const styles = StyleSheet.create({
   },
   scoreValueDark: {
     color: '#1e1e1e',
-    fontSize: 14,
-    fontWeight: '900',
   },
   metricRow: {
     flexDirection: 'row',

@@ -169,12 +169,12 @@ function slugify(value: string) {
 
 function normalizeGrade(value?: string): Product['nutriScore'] {
   const grade = value?.toUpperCase();
-  return grade && ['A', 'B', 'C', 'D', 'E'].includes(grade) ? (grade as Product['nutriScore']) : '?';
+  return grade && ['A', 'B', 'C', 'D', 'E'].includes(grade) ? (grade as Product['nutriScore']) : '-';
 }
 
 function normalizeEcoScore(value?: string): Product['ecoScore'] {
   const grade = value?.toUpperCase();
-  return grade && ['A', 'B', 'C', 'D', 'E'].includes(grade) ? (grade as Product['ecoScore']) : '?';
+  return grade && ['A', 'B', 'C', 'D', 'E'].includes(grade) ? (grade as Product['ecoScore']) : '-';
 }
 
 function normalizeNova(value?: number): Product['novaGroup'] {

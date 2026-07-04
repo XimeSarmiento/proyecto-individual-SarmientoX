@@ -28,7 +28,7 @@ export default function AppHeader({
         <Pressable style={styles.sideButton} hitSlop={10}>
           <FontAwesome name="share-alt" size={18} color="#00591c" />
         </Pressable>
-      ) : (
+      ) : ( 
         <View style={styles.sideButton}>
             <FontAwesome name="user-circle-o" size={18} color="#00591c" />
         </View>
