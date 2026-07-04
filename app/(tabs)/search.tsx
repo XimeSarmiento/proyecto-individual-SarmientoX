@@ -15,8 +15,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AppHeader from '@/src/components/AppHeader';
 import type { Product } from '@/src/data/catalog';
-import { fichaShowRoute } from '@/src/navigation/routes';
-import { searchProducts } from '@/src/services/openFoodFacts';
+import { fichaShowRoute, ROUTES } from '@/src/navigation/routes';
+import { getRandomProducts, searchProducts } from '@/src/services/openFoodFacts';
 
 export default function SearchScreen() {
   const [query, setQuery] = useState('');
@@ -33,7 +33,7 @@ export default function SearchScreen() {
   const normalizedQuery = query.trim();
 
   useEffect(() => {
-    if (normalizedQuery.length < 2) {
+    if (normalizedQuery.length === 1) {
       setProducts([]);
       setLoading(false);
       setLoadingMore(false);
@@ -56,9 +56,11 @@ export default function SearchScreen() {
     setError(null);
     setLoadMoreError(false);
     loadMoreFailedRef.current = false;
-    const timeout = setTimeout(async () => {
+    const loadProducts = async () => {
       try {
-        const result = await searchProducts(normalizedQuery, 1, controller.signal);
+        const result = normalizedQuery
+          ? await searchProducts(normalizedQuery, 1, controller.signal)
+          : await getRandomProducts(controller.signal);
         setProducts(result.products);
         setPage(result.page);
         setHasMore(result.hasMore);
@@ -70,7 +72,8 @@ export default function SearchScreen() {
       } finally {
         if (!controller.signal.aborted) setLoading(false);
       }
-    }, 450);
+    };
+    const timeout = setTimeout(loadProducts, normalizedQuery ? 450 : 0);
 
     return () => {
       clearTimeout(timeout);
@@ -128,26 +131,30 @@ export default function SearchScreen() {
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         ListHeaderComponent={(
           <>
-            <Text style={styles.title}>Buscar productos</Text>
-            <Text style={styles.subtitle}>Datos provistos por Open Food Facts</Text>
-            <View style={styles.searchBox}>
-              <FontAwesome name="search" size={21} color="#777b84" />
-              <TextInput
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoFocus
-                onChangeText={setQuery}
-                placeholder="Nombre, marca o código de barras"
-                placeholderTextColor="#969aa3"
-                returnKeyType="search"
-                style={styles.input}
-                value={query}
-              />
-              {query ? (
-                <Pressable hitSlop={10} onPress={() => setQuery('')}>
-                  <FontAwesome name="times-circle" size={19} color="#a9adb5" />
+            <View style={styles.searchRow}>
+              <View style={styles.searchBox}>
+                <FontAwesome name="search" size={21} color="#777b84" />
+                <TextInput
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  onChangeText={setQuery}
+                  placeholder="Categoría, marca, etiqueta o código"
+                  placeholderTextColor="#969aa3"
+                  returnKeyType="search"
+                  style={styles.input}
+                  value={query}
+                />
+                {query ? (
+                  <Pressable hitSlop={10} onPress={() => setQuery('')}>
+                    <FontAwesome name="times-circle" size={19} color="#a9adb5" />
+                  </Pressable>
+                ) : null}
+              </View>
+              <Link href={ROUTES.SCANNER} asChild>
+                <Pressable accessibilityLabel="Escanear código de barras" style={styles.scannerButton}>
+                  <FontAwesome name="barcode" size={24} color="#ffffff" />
                 </Pressable>
-              ) : null}
+              </Link>
             </View>
             {!loading && !error && products.length > 0 ? (
               <Text style={styles.resultCount}>{products.length} RESULTADOS CARGADOS</Text>
@@ -165,7 +172,7 @@ export default function SearchScreen() {
             <Text style={styles.stateTitle}>No se pudo consultar el catálogo</Text>
             <Text style={styles.stateText}>{error}</Text>
           </View>
-        ) : normalizedQuery.length < 2 ? (
+        ) : normalizedQuery.length === 1 ? (
           <View style={styles.stateBox}>
             <FontAwesome name="barcode" size={34} color="#98a09a" />
             <Text style={styles.stateText}>Ingresá al menos 2 caracteres para buscar.</Text>
@@ -222,13 +229,22 @@ const styles = StyleSheet.create({
   title: { color: '#121318', fontSize: 30, fontWeight: '900' },
   subtitle: { color: '#70737b', fontSize: 12, marginTop: 5 },
   searchBox: {
+    flex: 1,
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 12,
     backgroundColor: '#ffffff',
-    marginTop: 20,
     paddingHorizontal: 15,
+  },
+  searchRow: { flexDirection: 'row', alignItems: 'center', columnGap: 10, marginTop: 20 },
+  scannerButton: {
+    width: 56,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    backgroundColor: '#087f23',
   },
   input: { flex: 1, color: '#202226', fontSize: 15, marginLeft: 10, paddingVertical: 0 },
   stateBox: { minHeight: 230, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 },

@@ -51,7 +51,17 @@ export async function searchProducts(
   page = 1,
   signal?: AbortSignal,
 ): Promise<ProductPage> {
+  if (/^\d{8,14}$/.test(query.trim())) {
+    const product = await getProduct(query.trim(), signal);
+    return { products: product ? [product] : [], page: 1, hasMore: false };
+  }
+
   return requestProductPage({ search_terms: query }, page, 10, signal);
+}
+
+export async function getRandomProducts(signal?: AbortSignal): Promise<ProductPage> {
+  const result = await requestProductPage({ sort_by: 'random' }, 1, 10, signal);
+  return { ...result, hasMore: false };
 }
 
 export async function getProductsByCategory(category: string, page = 1, signal?: AbortSignal) {

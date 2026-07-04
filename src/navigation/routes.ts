@@ -8,6 +8,7 @@ export const ROUTES = {
   MARCA: '/marcas/[nombre]',
   TASTE: '/tastes/[nombre]',
   FICHA: '/ficha/[id]',
+  SCANNER: '/scanner',
 } as const;
 
 export type AppRoute = (typeof ROUTES)[keyof typeof ROUTES];
