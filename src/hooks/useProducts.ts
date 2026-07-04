@@ -5,7 +5,7 @@ import type { ProductPage } from '@/src/services/openFoodFacts';
 
 type ProductLoader = (page: number, signal: AbortSignal) => Promise<ProductPage>;
 
-export function useProducts(loader: ProductLoader) {
+export function useProducts(loader: ProductLoader, enabled = true) {
   const [products, setProducts] = useState<Product[]>([]);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
@@ -20,6 +20,17 @@ export function useProducts(loader: ProductLoader) {
   const retry = useCallback(() => setRequest((value) => value + 1), []);
 
   useEffect(() => {
+    if (!enabled) {
+      setProducts([]);
+      setPage(0);
+      setHasMore(false);
+      setLoading(false);
+      setLoadingMore(false);
+      setError(null);
+      setLoadMoreError(false);
+      return;
+    }
+
     const controller = new AbortController();
     paginationControllerRef.current?.abort();
     loadingMoreRef.current = false;
@@ -52,7 +63,7 @@ export function useProducts(loader: ProductLoader) {
       paginationControllerRef.current?.abort();
       loadingMoreRef.current = false;
     };
-  }, [loader, request]);
+  }, [enabled, loader, request]);
 
   const loadMore = useCallback(async () => {
     if (!hasMore || loading || loadingMoreRef.current || loadMoreFailedRef.current) return;
