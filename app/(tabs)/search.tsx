@@ -27,6 +27,7 @@ export default function SearchScreen() {
   const [loadMoreError, setLoadMoreError] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
+  const [retryRequest, setRetryRequest] = useState(0);
   const loadingMoreRef = useRef(false);
   const loadMoreFailedRef = useRef(false);
   const paginationControllerRef = useRef<AbortController | null>(null);
@@ -60,7 +61,7 @@ export default function SearchScreen() {
       try {
         const result = normalizedQuery
           ? await searchProducts(normalizedQuery, 1, controller.signal)
-          : await getRandomProducts(controller.signal);
+          : await getRandomProducts(1, controller.signal);
         setProducts(result.products);
         setPage(result.page);
         setHasMore(result.hasMore);
@@ -81,10 +82,10 @@ export default function SearchScreen() {
       paginationControllerRef.current?.abort();
       loadingMoreRef.current = false;
     };
-  }, [normalizedQuery]);
+  }, [normalizedQuery, retryRequest]);
 
   const loadMore = useCallback(async () => {
-    if (!hasMore || loading || loadingMoreRef.current || loadMoreFailedRef.current || normalizedQuery.length < 2) return;
+    if (!hasMore || loading || loadingMoreRef.current || loadMoreFailedRef.current || normalizedQuery.length === 1) return;
 
     const controller = new AbortController();
     paginationControllerRef.current?.abort();
@@ -94,7 +95,9 @@ export default function SearchScreen() {
     setLoadMoreError(false);
 
     try {
-      const result = await searchProducts(normalizedQuery, page + 1, controller.signal);
+      const result = normalizedQuery
+        ? await searchProducts(normalizedQuery, page + 1, controller.signal)
+        : await getRandomProducts(page + 1, controller.signal);
       setProducts((current) => {
         const existingIds = new Set(current.map((product) => product.id));
         return [...current, ...result.products.filter((product) => !existingIds.has(product.id))];
@@ -121,7 +124,7 @@ export default function SearchScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <AppHeader />
+      <AppHeader leftIcon={null} />
       <FlatList
         data={products}
         keyExtractor={(product) => product.id}
@@ -138,7 +141,7 @@ export default function SearchScreen() {
                   autoCapitalize="none"
                   autoCorrect={false}
                   onChangeText={setQuery}
-                  placeholder="Categoría, marca, etiqueta o código"
+                  placeholder="Categories, brands, taste, barcode ..."
                   placeholderTextColor="#969aa3"
                   returnKeyType="search"
                   style={styles.input}
@@ -171,6 +174,9 @@ export default function SearchScreen() {
             <FontAwesome name="exclamation-circle" size={28} color="#bd2432" />
             <Text style={styles.stateTitle}>No se pudo consultar el catálogo</Text>
             <Text style={styles.stateText}>{error}</Text>
+            <Pressable onPress={() => setRetryRequest((current) => current + 1)} style={styles.stateRetryButton}>
+              <Text style={styles.stateRetryText}>Reintentar</Text>
+            </Pressable>
           </View>
         ) : normalizedQuery.length === 1 ? (
           <View style={styles.stateBox}>
@@ -225,7 +231,7 @@ function ProductResult({ product }: { product: Product }) {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#f6f7f8' },
-  content: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 90 },
+  content: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 90 },
   title: { color: '#121318', fontSize: 30, fontWeight: '900' },
   subtitle: { color: '#70737b', fontSize: 12, marginTop: 5 },
   searchBox: {
@@ -255,6 +261,8 @@ const styles = StyleSheet.create({
   footer: { marginVertical: 22 },
   retryButton: { alignItems: 'center', marginVertical: 18, paddingVertical: 10 },
   retryText: { color: '#087f23', fontSize: 12, fontWeight: '800' },
+  stateRetryButton: { borderRadius: 9, backgroundColor: '#087f23', marginTop: 18, paddingHorizontal: 24, paddingVertical: 12 },
+  stateRetryText: { color: '#ffffff', fontSize: 13, fontWeight: '800' },
   card: {
     minHeight: 116,
     flexDirection: 'row',

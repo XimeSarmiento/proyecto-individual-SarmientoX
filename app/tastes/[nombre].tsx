@@ -1,5 +1,5 @@
 import { Redirect, useLocalSearchParams } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import ProductListScreen from '@/src/components/ProductListScreen';
 import { tastes } from '@/src/data/catalog';
@@ -10,9 +10,10 @@ import { getProductsByTaste } from '@/src/services/openFoodFacts';
 export default function TasteProductsScreen() {
   const { nombre } = useLocalSearchParams<{ nombre: string }>();
   const taste = tastes.find((item) => item.id === nombre);
+  const [query, setQuery] = useState('');
   const loader = useCallback(
-    (page: number, signal: AbortSignal) => getProductsByTaste(nombre ?? '', page, signal),
-    [nombre],
+    (page: number, signal: AbortSignal) => getProductsByTaste(nombre ?? '', page, signal, query),
+    [nombre, query],
   );
   const {
     products,
@@ -44,6 +45,7 @@ export default function TasteProductsScreen() {
       loadMoreError={loadMoreError}
       onLoadMore={loadMore}
       onRetryLoadMore={retryLoadMore}
+      onSearchChange={setQuery}
     />
   );
 }

@@ -1,5 +1,5 @@
 import { Redirect, useLocalSearchParams } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import ProductListScreen from '@/src/components/ProductListScreen';
 import { brands } from '@/src/data/catalog';
@@ -10,9 +10,10 @@ import { getProductsByBrand } from '@/src/services/openFoodFacts';
 export default function BrandProductsScreen() {
   const { nombre } = useLocalSearchParams<{ nombre: string }>();
   const brand = brands.find((item) => item.id === nombre);
+  const [query, setQuery] = useState('');
   const loader = useCallback(
-    (page: number, signal: AbortSignal) => getProductsByBrand(nombre ?? '', page, signal),
-    [nombre],
+    (page: number, signal: AbortSignal) => getProductsByBrand(nombre ?? '', page, signal, query),
+    [nombre, query],
   );
   const { products, loading, loadingMore, error, loadMoreError, retry, loadMore, retryLoadMore } = useProducts(loader);
 
@@ -35,6 +36,7 @@ export default function BrandProductsScreen() {
       loadMoreError={loadMoreError}
       onLoadMore={loadMore}
       onRetryLoadMore={retryLoadMore}
+      onSearchChange={setQuery}
     />
   );
 }

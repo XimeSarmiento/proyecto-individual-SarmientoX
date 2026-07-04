@@ -1,6 +1,6 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Link, router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -22,6 +22,7 @@ type ProductListScreenProps = {
   loadMoreError?: boolean;
   onLoadMore?: () => void;
   onRetryLoadMore?: () => void;
+  onSearchChange?: (query: string) => void;
 };
 
 export default function ProductListScreen({
@@ -38,21 +39,18 @@ export default function ProductListScreen({
   loadMoreError = false,
   onLoadMore,
   onRetryLoadMore,
+  onSearchChange,
 }: ProductListScreenProps) {
   const [query, setQuery] = useState('');
-  const normalizedQuery = query.trim().toLowerCase();
-  const filteredProducts = useMemo(() => {
-    if (!normalizedQuery) {
-      return products;
-    }
+  const normalizedQuery = query.trim();
 
-    return products.filter((product) => {
-      const searchableText = `${product.name} ${product.maker}`.toLowerCase();
-      return searchableText.includes(normalizedQuery);
-    });
-  }, [normalizedQuery, products]);
+  useEffect(() => {
+    const timeout = setTimeout(() => onSearchChange?.(normalizedQuery), 500);
+    return () => clearTimeout(timeout);
+  }, [normalizedQuery, onSearchChange]);
+
   const resultLabel = normalizedQuery
-    ? `${filteredProducts.length} ${filteredProducts.length === 1 ? 'RESULT' : 'RESULTS'}`
+    ? `${products.length} ${products.length === 1 ? 'RESULT' : 'RESULTS'}`
     : countLabel;
 
   return (
@@ -63,7 +61,7 @@ export default function ProductListScreen({
       />
 
       <FlatList
-        data={loading || error ? [] : filteredProducts}
+        data={loading || error ? [] : products}
         keyExtractor={(product) => product.id}
         renderItem={({ item }) => (
           <ProductCard product={item} originType={originType} originId={originId} />
