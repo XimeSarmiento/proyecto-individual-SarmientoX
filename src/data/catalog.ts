@@ -39,7 +39,9 @@ export type Product = {
   fat: string;
   protein: string;
   ingredients: string;
+  hasIngredients: boolean;
   allergens: string;
+  hasNutritionInfo: boolean;
   nutrition: Array<{
     label: string;
     value: string;
@@ -218,10 +220,12 @@ export const products: Product[] = categories.flatMap((category) =>
       protein: `${(1 + productIndex * 0.6).toFixed(1)}g`,
       ingredients:
         'Water, oats (10%), rapeseed oil, minerals (calcium carbonate, dibasic calcium phosphate, potassium iodide), salt, vitamins (D2, riboflavin, B12).',
+      hasIngredients: true,
       allergens:
         productIndex % 2 === 0
           ? 'Contains gluten (oats). May contain traces of soy.'
           : 'May contain traces of milk, nuts and sesame.',
+      hasNutritionInfo: true,
       nutrition: nutritionValues,
     };
   }),

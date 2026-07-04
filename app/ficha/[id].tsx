@@ -107,7 +107,11 @@ export default function ProductDetailScreen() {
             <FontAwesome name="sliders" size={18} color="#087f23" style={styles.blockTitleIcon} />
             <Text style={styles.blockTitle}>Ingredients</Text>
           </View>
-          <Text style={styles.ingredientsText}>{product.ingredients}</Text>
+          {product.hasIngredients ? (
+            <Text style={styles.ingredientsText}>{product.ingredients}</Text>
+          ) : (
+            <MissingInformation />
+          )}
           <View style={styles.allergenBox}>
             <FontAwesome name="warning" size={18} color="#c70018" />
             <View style={styles.allergenTextBlock}>
@@ -119,12 +123,16 @@ export default function ProductDetailScreen() {
 
         <View style={styles.nutritionCard}>
           <Text style={styles.nutritionTitle}>Nutritional Values (per 100ml)</Text>
-          {product.nutrition.map((item) => (
-            <View key={`${item.label}-${item.value}`} style={styles.nutritionRow}>
-              <Text style={item.detail ? styles.nutritionDetailLabel : styles.nutritionLabel}>{item.label}</Text>
-              <Text style={styles.nutritionValue}>{item.value}</Text>
-            </View>
-          ))}
+          {product.hasNutritionInfo ? (
+            product.nutrition.map((item) => (
+              <View key={`${item.label}-${item.value}`} style={styles.nutritionRow}>
+                <Text style={item.detail ? styles.nutritionDetailLabel : styles.nutritionLabel}>{item.label}</Text>
+                <Text style={styles.nutritionValue}>{item.value}</Text>
+              </View>
+            ))
+          ) : (
+            <MissingInformation />
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -160,6 +168,15 @@ function Metric({ label, value }: { label: string; value: string }) {
     <View style={styles.metric}>
       <Text style={styles.metricLabel}>{label}</Text>
       <Text style={styles.metricValue}>{value}</Text>
+    </View>
+  );
+}
+
+function MissingInformation() {
+  return (
+    <View style={styles.missingInformation}>
+      <FontAwesome name="info-circle" size={22} color="#8b9098" />
+      <Text style={styles.missingInformationText}>Sin información</Text>
     </View>
   );
 }
@@ -373,6 +390,20 @@ const styles = StyleSheet.create({
     color: '#222222',
     fontSize: 12,
     lineHeight: 18,
+  },
+  missingInformation: {
+    minHeight: 70,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 10,
+    backgroundColor: '#e5e7e9',
+    padding: 14,
+  },
+  missingInformationText: {
+    color: '#747981',
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 7,
   },
   allergenBox: {
     flexDirection: 'row',

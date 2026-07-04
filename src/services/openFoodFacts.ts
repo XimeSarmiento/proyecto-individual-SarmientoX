@@ -176,6 +176,10 @@ function hasIdentity(product: OffProduct): product is OffProduct & { code: strin
 
 function mapProduct(product: OffProduct & { code: string }): Product {
   const nutriments = product.nutriments ?? {};
+  const ingredients = product.ingredients_text?.trim();
+  const hasNutritionInfo = Object.values(nutriments).some(
+    (nutriment) => nutriment !== undefined && nutriment !== '',
+  );
   const value = (key: string, unit = 'g') => formatNutriment(nutriments[key], unit);
   const energyKj = value('energy-kj_100g', 'kJ');
   const allergens = product.allergens?.trim() || product.allergens_tags?.map(cleanTag).join(', ');
@@ -193,8 +197,10 @@ function mapProduct(product: OffProduct & { code: string }): Product {
     energy: energyKj,
     fat: value('fat_100g'),
     protein: value('proteins_100g'),
-    ingredients: product.ingredients_text?.trim() || 'Ingredientes no informados.',
+    ingredients: ingredients || '',
+    hasIngredients: Boolean(ingredients),
     allergens: allergens || 'Alérgenos no informados.',
+    hasNutritionInfo,
     nutrition: [
       { label: 'Energía', value: energyKj },
       { label: 'Grasas', value: value('fat_100g') },
