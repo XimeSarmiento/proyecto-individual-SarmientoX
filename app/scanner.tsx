@@ -16,28 +16,28 @@ export default function ScannerScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [code, setCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('Ubicá el código de barras dentro del recuadro.');
+  const [message, setMessage] = useState('Place the barcode inside the frame.');
 
   const handleBarcode = ({ data }: BarcodeScanningResult) => {
     if (code || loading) return;
     setCode(data.trim());
-    setMessage(`Código detectado: ${data.trim()}`);
+    setMessage(`Barcode detected: ${data.trim()}`);
   };
 
   const viewProduct = async () => {
     if (!code || loading) return;
     setLoading(true);
-    setMessage('Buscando producto…');
+    setMessage('Searching for product…');
 
     try {
       const product = await queryClient.fetchQuery(productQueryOptions(code));
       if (!product) {
-        setMessage('No se encontró el producto en Open Food Facts.');
+        setMessage('The product was not found in Open Food Facts.');
         return;
       }
       router.replace(fichaShowRoute(product.id));
     } catch {
-      setMessage('No se pudo consultar la API. Intentá nuevamente.');
+      setMessage('The API could not be reached. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -45,7 +45,7 @@ export default function ScannerScreen() {
 
   const scanAgain = () => {
     setCode(null);
-    setMessage('Ubicá el código de barras dentro del recuadro.');
+    setMessage('Place the barcode inside the frame.');
   };
 
   return (
@@ -61,10 +61,10 @@ export default function ScannerScreen() {
         ) : (
           <View style={styles.permissionState}>
             <FontAwesome name="camera" size={38} color="#087f23" />
-            <Text style={styles.permissionText}>Se necesita permiso para usar la cámara.</Text>
+            <Text style={styles.permissionText}>Camera permission is required.</Text>
             {permission ? (
               <Pressable onPress={requestPermission} style={styles.permissionButton}>
-                <Text style={styles.permissionButtonText}>Permitir cámara</Text>
+                <Text style={styles.permissionButtonText}>Allow camera</Text>
               </Pressable>
             ) : (
               <ActivityIndicator color="#087f23" />
@@ -72,7 +72,7 @@ export default function ScannerScreen() {
           </View>
         )}
 
-        <Pressable accessibilityLabel="Volver" hitSlop={10} onPress={() => router.back()} style={styles.backButton}>
+        <Pressable accessibilityLabel="Go back" hitSlop={10} onPress={() => router.back()} style={styles.backButton}>
           <FontAwesome name="arrow-left" size={20} color="#ffffff" />
         </Pressable>
         {permission?.granted ? <View pointerEvents="none" style={styles.scanFrame} /> : null}
@@ -83,14 +83,14 @@ export default function ScannerScreen() {
         <View style={styles.buttonRow}>
           {code ? (
             <Pressable disabled={loading} onPress={scanAgain} style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>Escanear otra vez</Text>
+              <Text style={styles.secondaryButtonText}>Scan again</Text>
             </Pressable>
           ) : null}
           <Pressable
             disabled={!code || loading}
             onPress={viewProduct}
             style={[styles.productButton, (!code || loading) && styles.disabledButton]}>
-            {loading ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.productButtonText}>Ver producto</Text>}
+            {loading ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.productButtonText}>View product</Text>}
           </Pressable>
         </View>
       </View>

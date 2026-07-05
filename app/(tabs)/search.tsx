@@ -63,7 +63,7 @@ export default function SearchScreen() {
                 ) : null}
               </View>
               <Link href={ROUTES.SCANNER} asChild>
-                <Pressable accessibilityLabel="Escanear código de barras" style={styles.scannerButton}>
+                <Pressable accessibilityLabel="Scan barcode" style={styles.scannerButton}>
                   <FontAwesome name="barcode" size={24} color="#ffffff" />
                 </Pressable>
               </Link>
@@ -74,18 +74,18 @@ export default function SearchScreen() {
           </>
         )}
         ListEmptyComponent={loading ? (
-          <StateBox icon={<ActivityIndicator color="#087f23" size="large" />} text="Buscando productos…" />
+          <StateBox icon={<ActivityIndicator color="#087f23" size="large" />} text="Searching products…" />
         ) : error ? (
           <StateBox
             icon={<FontAwesome name="exclamation-circle" size={28} color="#bd2432" />}
-            title="No se pudo consultar el catálogo"
-            text={error instanceof Error ? error.message : 'Error desconocido'}
-            action={<Pressable onPress={() => refetch()} style={styles.stateRetryButton}><Text style={styles.stateRetryText}>Reintentar</Text></Pressable>}
+            title="The catalog could not be loaded"
+            text={error instanceof Error ? error.message : 'Unknown error'}
+            action={<Pressable onPress={() => refetch()} style={styles.stateRetryButton}><Text style={styles.stateRetryText}>Retry</Text></Pressable>}
           />
         ) : normalizedQuery.length === 1 ? (
-          <StateBox icon={<FontAwesome name="barcode" size={34} color="#98a09a" />} text="Ingresá al menos 2 caracteres para buscar." />
+          <StateBox icon={<FontAwesome name="barcode" size={34} color="#98a09a" />} text="Enter at least 2 characters to search." />
         ) : (
-          <StateBox icon={<FontAwesome name="search" size={28} color="#98a09a" />} title="Sin resultados" text="Probá con otro nombre, marca o código." />
+          <StateBox icon={<FontAwesome name="search" size={28} color="#98a09a" />} title="No results" text="Try another name, brand, or barcode." />
         )}
         ListFooterComponent={loadingMore ? (
           <View style={styles.skeletonFooter}>
@@ -96,8 +96,8 @@ export default function SearchScreen() {
           <Pressable accessibilityRole="button" onPress={() => fetchNextPage()} style={styles.retryButton}>
             <FontAwesome name="exclamation-circle" size={18} color="#bd2432" />
             <View>
-              <Text style={styles.retryTitle}>No se pudieron cargar más productos</Text>
-              <Text style={styles.retryText}>Tocar para reintentar</Text>
+              <Text style={styles.retryTitle}>More products could not be loaded</Text>
+              <Text style={styles.retryText}>Tap to retry</Text>
             </View>
           </Pressable>
         ) : null}

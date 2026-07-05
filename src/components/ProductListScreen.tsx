@@ -103,11 +103,11 @@ export default function ProductListScreen({
         ) : error ? (
           <View style={styles.emptyState}>
             <FontAwesome name="exclamation-circle" size={24} color="#bd2432" />
-            <Text style={styles.emptyTitle}>No se pudo cargar el catálogo</Text>
+            <Text style={styles.emptyTitle}>The catalog could not be loaded</Text>
             <Text style={styles.emptyText}>{error}</Text>
             {onRetry ? (
               <Pressable onPress={onRetry} style={styles.retryButton}>
-                <Text style={styles.retryText}>Reintentar</Text>
+                <Text style={styles.retryText}>Retry</Text>
               </Pressable>
             ) : null}
           </View>
@@ -127,8 +127,8 @@ export default function ProductListScreen({
           <Pressable accessibilityRole="button" onPress={onRetryLoadMore} style={styles.loadMoreRetry}>
             <FontAwesome name="exclamation-circle" size={18} color="#bd2432" />
             <View style={styles.loadMoreRetryBody}>
-              <Text style={styles.loadMoreRetryTitle}>No se pudieron cargar más productos</Text>
-              <Text style={styles.loadMoreRetryText}>Tocar para reintentar</Text>
+              <Text style={styles.loadMoreRetryTitle}>More products could not be loaded</Text>
+              <Text style={styles.loadMoreRetryText}>Tap to retry</Text>
             </View>
           </Pressable>
         ) : null}

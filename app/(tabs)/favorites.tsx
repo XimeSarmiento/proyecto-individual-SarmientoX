@@ -29,8 +29,8 @@ export default function FavoritesScreen() {
         ) : (
           <View style={styles.state}>
             <FontAwesome name={isError ? 'exclamation-circle' : 'heart-o'} size={30} color="#98a09a" />
-            <Text style={styles.stateTitle}>{isError ? 'No se pudieron cargar' : 'Todavía no hay favoritos'}</Text>
-            <Text style={styles.stateText}>Marcá productos desde su ficha para verlos aquí.</Text>
+            <Text style={styles.stateTitle}>{isError ? 'Favorites could not be loaded' : 'No favorites yet'}</Text>
+            <Text style={styles.stateText}>Mark products as favorites from their details to see them here.</Text>
           </View>
         )}
       />

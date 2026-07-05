@@ -34,7 +34,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Permitir que Digital Epicurean use la cámara para escanear códigos de barras.",
+          "cameraPermission": "Allow Digital Epicurean to use the camera to scan barcodes.",
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
           "recordAudioAndroid": true,
           "barcodeScannerEnabled": true

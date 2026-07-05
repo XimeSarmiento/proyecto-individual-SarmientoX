@@ -27,7 +27,7 @@ export default function ProductDetailScreen() {
         <AppHeader leftIcon="arrow-left" onLeftPress={() => router.back()} />
         <View style={styles.loadingState}>
           <ActivityIndicator size="large" color="#087f23" />
-          <Text style={styles.loadingText}>Cargando producto…</Text>
+          <Text style={styles.loadingText}>Loading product…</Text>
         </View>
       </SafeAreaView>
     );
@@ -55,7 +55,7 @@ export default function ProductDetailScreen() {
 
         <View style={styles.summaryCard}>
           <Pressable
-            accessibilityLabel={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+            accessibilityLabel={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
             disabled={toggleFavorite.isPending}
             onPress={() => toggleFavorite.mutate({ product, isFavorite })}
             style={styles.favoriteButton}>

@@ -5,7 +5,7 @@ export default function MissingInformation() {
   return (
     <View style={styles.container}>
       <FontAwesome name="info-circle" size={22} color="#8b9098" />
-      <Text style={styles.text}>Sin información</Text>
+      <Text style={styles.text}>Information unavailable</Text>
     </View>
   );
 }

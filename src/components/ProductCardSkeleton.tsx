@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 export default function ProductCardSkeleton() {
   return (
-    <View accessibilityLabel="Cargando producto" style={styles.card}>
+    <View accessibilityLabel="Loading product" style={styles.card}>
       <View style={styles.image} />
       <View style={styles.body}>
         <View style={styles.title} />
