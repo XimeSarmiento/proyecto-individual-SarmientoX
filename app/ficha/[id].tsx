@@ -9,8 +9,6 @@ import { GradeBadge, NovaBadge } from '@/src/components/ScoreBadge';
 import { useFavorites, useToggleFavorite } from '@/src/hooks/useFavorites';
 import { useProduct } from '@/src/hooks/useProductQueries';
 import { buildRoute, ROUTES } from '@/src/navigation/routes';
-import { getProduct } from '@/src/services/openFoodFacts';
-import type { Product } from '@/src/types/product';
 
 export default function ProductDetailScreen() {
   const { id, originType, originId } = useLocalSearchParams<{
@@ -18,30 +16,10 @@ export default function ProductDetailScreen() {
     originType?: 'categoria' | 'marca' | 'taste';
     originId?: string;
   }>();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [failed, setFailed] = useState(false);
-
-  useEffect(() => {
-    if (!id) return;
-
-    const controller = new AbortController();
-    setLoading(true);
-    setFailed(false);
-    getProduct(id, controller.signal)
-      .then((remoteProduct) => {
-        setProduct(remoteProduct);
-        setFailed(!remoteProduct);
-      })
-      .catch(() => {
-        if (!controller.signal.aborted) setFailed(true);
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-
-    return () => controller.abort();
-  }, [id]);
+  const { data: product, isPending: loading, isError } = useProduct(id);
+  const { data: favorites = [] } = useFavorites();
+  const toggleFavorite = useToggleFavorite();
+  const isFavorite = favorites.some((favorite) => favorite.id === id);
 
   if (loading) {
     return (
@@ -55,7 +33,7 @@ export default function ProductDetailScreen() {
     );
   }
 
-  if (!product && failed) {
+  if (!product && isError) {
     return <Redirect href={ROUTES.HOME} />;
   }
 
@@ -76,8 +54,12 @@ export default function ProductDetailScreen() {
         </View>
 
         <View style={styles.summaryCard}>
-          <Pressable style={styles.favoriteButton}>
-            <FontAwesome name="heart" size={18} color="#087f23" />
+          <Pressable
+            accessibilityLabel={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+            disabled={toggleFavorite.isPending}
+            onPress={() => toggleFavorite.mutate({ product, isFavorite })}
+            style={styles.favoriteButton}>
+            <FontAwesome name={isFavorite ? 'heart' : 'heart-o'} size={18} color="#087f23" />
           </Pressable>
           <Text style={styles.maker}>{product.maker.toUpperCase()}</Text>
           <Text style={styles.productName}>{product.name}</Text>
