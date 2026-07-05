@@ -2,8 +2,8 @@ import { Redirect, useLocalSearchParams } from 'expo-router';
 
 import FilteredProductsScreen from '@/src/components/FilteredProductsScreen';
 import { brands } from '@/src/data/filters';
+import { useProductsByBrand } from '@/src/hooks/useProductQueries';
 import { ROUTES } from '@/src/navigation/routes';
-import { getProductsByBrand } from '@/src/services/openFoodFacts';
 
 export default function BrandProductsScreen() {
   const { nombre } = useLocalSearchParams<{ nombre: string }>();
@@ -17,7 +17,7 @@ export default function BrandProductsScreen() {
       placeholder={`Search ${brand.name} products`}
       originType="marca"
       originId={brand.id}
-      loadPage={getProductsByBrand}
+      useProductsHook={useProductsByBrand}
     />
   );
 }

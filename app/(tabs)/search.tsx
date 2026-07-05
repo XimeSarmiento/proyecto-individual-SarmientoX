@@ -1,37 +1,34 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Link } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AppHeader from '@/src/components/AppHeader';
 import ProductCard from '@/src/components/ProductCard';
 import { useDebouncedValue } from '@/src/hooks/useDebouncedValue';
-import { useProducts } from '@/src/hooks/useProducts';
+import { useSearchProducts } from '@/src/hooks/useProductQueries';
 import { ROUTES } from '@/src/navigation/routes';
-import { getRandomProducts, searchProducts } from '@/src/services/openFoodFacts';
 
 export default function SearchScreen() {
   const [query, setQuery] = useState('');
   const normalizedQuery = query.trim();
   const debouncedQuery = useDebouncedValue(normalizedQuery, 450);
   const enabled = debouncedQuery.length !== 1;
-  const loader = useCallback(
-    (page: number, signal: AbortSignal) => debouncedQuery
-      ? searchProducts(debouncedQuery, page, signal)
-      : getRandomProducts(page, signal),
-    [debouncedQuery],
-  );
   const {
     products,
-    loading,
-    loadingMore,
+    isPending,
+    isFetchingNextPage: loadingMore,
     error,
-    loadMoreError,
-    retry,
-    loadMore,
-    retryLoadMore,
-  } = useProducts(loader, enabled);
+    isFetchNextPageError: loadMoreError,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+  } = useSearchProducts(debouncedQuery, enabled);
+  const loading = enabled && isPending;
+  const loadMore = () => {
+    if (hasNextPage && !loadingMore) void fetchNextPage();
+  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -81,8 +78,8 @@ export default function SearchScreen() {
           <StateBox
             icon={<FontAwesome name="exclamation-circle" size={28} color="#bd2432" />}
             title="No se pudo consultar el catálogo"
-            text={error}
-            action={<Pressable onPress={retry} style={styles.stateRetryButton}><Text style={styles.stateRetryText}>Reintentar</Text></Pressable>}
+            text={error instanceof Error ? error.message : 'Error desconocido'}
+            action={<Pressable onPress={() => refetch()} style={styles.stateRetryButton}><Text style={styles.stateRetryText}>Reintentar</Text></Pressable>}
           />
         ) : normalizedQuery.length === 1 ? (
           <StateBox icon={<FontAwesome name="barcode" size={34} color="#98a09a" />} text="Ingresá al menos 2 caracteres para buscar." />
@@ -92,7 +89,7 @@ export default function SearchScreen() {
         ListFooterComponent={loadingMore ? (
           <ActivityIndicator color="#087f23" style={styles.footer} />
         ) : loadMoreError ? (
-          <Pressable onPress={retryLoadMore} style={styles.retryButton}>
+          <Pressable onPress={() => fetchNextPage()} style={styles.retryButton}>
             <Text style={styles.retryText}>No se pudo cargar más. Reintentar</Text>
           </Pressable>
         ) : null}

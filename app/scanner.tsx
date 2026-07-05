@@ -1,4 +1,5 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { useQueryClient } from '@tanstack/react-query';
 import { CameraView, type BarcodeScanningResult, useCameraPermissions } from 'expo-camera';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -6,11 +7,12 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { fichaShowRoute } from '@/src/navigation/routes';
-import { getProduct } from '@/src/services/openFoodFacts';
+import { productQueryOptions } from '@/src/hooks/useProductQueries';
 
 const BARCODE_TYPES = ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128'] as const;
 
 export default function ScannerScreen() {
+  const queryClient = useQueryClient();
   const [permission, requestPermission] = useCameraPermissions();
   const [code, setCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -28,7 +30,7 @@ export default function ScannerScreen() {
     setMessage('Buscando producto…');
 
     try {
-      const product = await getProduct(code);
+      const product = await queryClient.fetchQuery(productQueryOptions(code));
       if (!product) {
         setMessage('No se encontró el producto en Open Food Facts.');
         return;

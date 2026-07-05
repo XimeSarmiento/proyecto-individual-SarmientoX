@@ -1,8 +1,9 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 
-import { useProducts } from '@/src/hooks/useProducts';
-import type { ProductPage } from '@/src/services/openFoodFacts';
+import { useProductsByCategory } from '@/src/hooks/useProductQueries';
 import ProductListScreen from './ProductListScreen';
+
+type ProductsQueryHook = typeof useProductsByCategory;
 
 type FilteredProductsScreenProps = {
   title: string;
@@ -10,7 +11,7 @@ type FilteredProductsScreenProps = {
   placeholder: string;
   originType: 'categoria' | 'marca' | 'taste';
   originId: string;
-  loadPage: (id: string, page: number, signal: AbortSignal, query: string) => Promise<ProductPage>;
+  useProductsHook: ProductsQueryHook;
 };
 
 export default function FilteredProductsScreen({
@@ -19,14 +20,10 @@ export default function FilteredProductsScreen({
   placeholder,
   originType,
   originId,
-  loadPage,
+  useProductsHook,
 }: FilteredProductsScreenProps) {
   const [query, setQuery] = useState('');
-  const loader = useCallback(
-    (page: number, signal: AbortSignal) => loadPage(originId, page, signal, query),
-    [loadPage, originId, query],
-  );
-  const result = useProducts(loader);
+  const result = useProductsHook(originId, query);
 
   return (
     <ProductListScreen
@@ -36,13 +33,15 @@ export default function FilteredProductsScreen({
       products={result.products}
       originType={originType}
       originId={originId}
-      loading={result.loading}
-      error={result.error}
-      onRetry={result.retry}
-      loadingMore={result.loadingMore}
-      loadMoreError={result.loadMoreError}
-      onLoadMore={result.loadMore}
-      onRetryLoadMore={result.retryLoadMore}
+      loading={result.isPending}
+      error={result.error instanceof Error ? result.error.message : null}
+      onRetry={() => result.refetch()}
+      loadingMore={result.isFetchingNextPage}
+      loadMoreError={result.isFetchNextPageError}
+      onLoadMore={() => {
+        if (result.hasNextPage && !result.isFetchingNextPage) void result.fetchNextPage();
+      }}
+      onRetryLoadMore={() => result.fetchNextPage()}
       onSearchChange={setQuery}
     />
   );
