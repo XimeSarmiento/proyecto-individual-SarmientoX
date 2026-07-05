@@ -178,11 +178,16 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     minWidth: 0,
+    height: '100%',
     color: '#9c9fa9',
     fontSize: 15,
+    lineHeight: 20,
     fontWeight: '600',
     marginLeft: 10,
-    paddingVertical: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
+    textAlignVertical: 'center',
+    includeFontPadding: false,
   },
   productStack: {
     rowGap: 10,

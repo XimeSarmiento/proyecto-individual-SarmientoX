@@ -69,7 +69,7 @@ export default function SearchScreen() {
               </Link>
             </View>
             {!loading && !error && products.length > 0 ? (
-              <Text style={styles.resultCount}>{products.length} RESULTADOS CARGADOS</Text>
+              <Text style={styles.resultCount}>{products.length} ITEMS FOUND</Text>
             ) : null}
           </>
         )}
@@ -128,13 +128,24 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#f6f7f8' },
   content: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 90 },
   searchBox: { flex: 1, height: 56, flexDirection: 'row', alignItems: 'center', borderRadius: 12, backgroundColor: '#ffffff', paddingHorizontal: 15 },
-  searchRow: { flexDirection: 'row', alignItems: 'center', columnGap: 10, marginTop: 20 },
+  searchRow: { flexDirection: 'row', alignItems: 'center', columnGap: 10, marginTop: 20, marginBottom: 18 },
   scannerButton: { width: 56, height: 56, alignItems: 'center', justifyContent: 'center', borderRadius: 12, backgroundColor: '#087f23' },
-  input: { flex: 1, color: '#202226', fontSize: 15, marginLeft: 10, paddingVertical: 0 },
+  input: {
+    flex: 1,
+    height: '100%',
+    color: '#202226',
+    fontSize: 15,
+    lineHeight: 20,
+    marginLeft: 10,
+    paddingTop: 0,
+    paddingBottom: 0,
+    textAlignVertical: 'center',
+    includeFontPadding: false,
+  },
   stateBox: { minHeight: 230, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 },
   stateTitle: { color: '#26282d', fontSize: 17, fontWeight: '800', marginTop: 12, textAlign: 'center' },
   stateText: { color: '#747881', fontSize: 13, lineHeight: 19, marginTop: 9, textAlign: 'center' },
-  resultCount: { color: '#71727c', fontSize: 11, letterSpacing: 1.5, marginVertical: 18 },
+  resultCount: { color: '#71727c', fontSize: 11, letterSpacing: 1.5, marginBottom: 18 },
   separator: { height: 10 },
   skeletonFooter: { rowGap: 10, marginTop: 10 },
   retryButton: { minHeight: 62, flexDirection: 'row', alignItems: 'center', columnGap: 10, borderRadius: 10, backgroundColor: '#ffffff', marginTop: 10, paddingHorizontal: 16 },
