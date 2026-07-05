@@ -23,7 +23,7 @@ export default function ProductInformationCards({ product }: { product: Product 
       </View>
 
       <View style={styles.nutritionCard}>
-        <Text style={styles.nutritionTitle}>Nutritional Values (per 100ml)</Text>
+        <Text style={styles.nutritionTitle}>Nutritional Values</Text>
         {product.hasNutritionInfo ? product.nutrition.map((item) => (
           <View key={`${item.label}-${item.value}`} style={styles.nutritionRow}>
             <Text style={item.detail ? styles.nutritionDetailLabel : styles.nutritionLabel}>{item.label}</Text>
