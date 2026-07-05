@@ -1,13 +1,14 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Product } from '@/src/types/product';
 import { ROUTES } from '@/src/navigation/routes';
 import AppHeader from './AppHeader';
 import ProductCard from './ProductCard';
+import ProductCardSkeleton from './ProductCardSkeleton';
 
 type ProductListScreenProps = {
   title: string;
@@ -94,9 +95,10 @@ export default function ProductListScreen({
           </>
         )}
         ListEmptyComponent={loading ? (
-          <View style={styles.emptyState}>
-            <ActivityIndicator size="large" color="#087f23" />
-            <Text style={styles.emptyText}>Cargando productos…</Text>
+          <View style={styles.initialSkeletons}>
+            {Array.from({ length: 5 }, (_, index) => (
+              <ProductCardSkeleton key={index} />
+            ))}
           </View>
         ) : error ? (
           <View style={styles.emptyState}>
@@ -117,10 +119,17 @@ export default function ProductListScreen({
           </View>
         )}
         ListFooterComponent={loadingMore ? (
-          <ActivityIndicator color="#087f23" style={styles.listFooter} />
+          <View style={styles.skeletonFooter}>
+            <ProductCardSkeleton />
+            <ProductCardSkeleton />
+          </View>
         ) : loadMoreError && onRetryLoadMore ? (
-          <Pressable onPress={onRetryLoadMore} style={styles.loadMoreRetry}>
-            <Text style={styles.loadMoreRetryText}>No se pudo cargar más. Reintentar</Text>
+          <Pressable accessibilityRole="button" onPress={onRetryLoadMore} style={styles.loadMoreRetry}>
+            <FontAwesome name="exclamation-circle" size={18} color="#bd2432" />
+            <View style={styles.loadMoreRetryBody}>
+              <Text style={styles.loadMoreRetryTitle}>No se pudieron cargar más productos</Text>
+              <Text style={styles.loadMoreRetryText}>Tocar para reintentar</Text>
+            </View>
           </Pressable>
         ) : null}
         onEndReached={onLoadMore}
@@ -181,28 +190,25 @@ const styles = StyleSheet.create({
   productSeparator: {
     height: 10,
   },
-  listFooter: {
-    marginVertical: 22,
-  },
+  skeletonFooter: { rowGap: 10, marginTop: 10 },
   loadMoreRetry: {
-    alignItems: 'center',
-    marginVertical: 18,
-    paddingVertical: 10,
-  },
-  loadMoreRetryText: {
-    color: '#087f23',
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  skeleton: {
-    minHeight: 150,
+    minHeight: 62,
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 16,
-    backgroundColor: '#f5f6f7',
-    marginTop: 18,
-    padding: 16,
+    borderRadius: 10,
+    backgroundColor: '#ffffff',
+    marginTop: 10,
+    paddingHorizontal: 16,
   },
+  loadMoreRetryBody: { marginLeft: 10 },
+  loadMoreRetryTitle: { color: '#34363b', fontSize: 12, fontWeight: '700' },
+  loadMoreRetryText: {
+    color: '#087f23',
+    fontSize: 10,
+    fontWeight: '700',
+    marginTop: 3,
+  },
+  initialSkeletons: { rowGap: 10 },
   emptyState: {
     minHeight: 170,
     alignItems: 'center',
@@ -233,37 +239,5 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 12,
     fontWeight: '800',
-  },
-  skeletonImage: {
-    width: 94,
-    height: 94,
-    borderRadius: 10,
-    backgroundColor: '#e9eaec',
-  },
-  skeletonBody: {
-    flex: 1,
-    marginLeft: 16,
-    rowGap: 14,
-  },
-  skeletonLineLarge: {
-    height: 22,
-    borderRadius: 5,
-    backgroundColor: '#e9eaec',
-  },
-  skeletonLineMedium: {
-    width: '34%',
-    height: 18,
-    borderRadius: 5,
-    backgroundColor: '#e9eaec',
-  },
-  skeletonBottomRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  skeletonLineSmall: {
-    width: 66,
-    height: 18,
-    borderRadius: 5,
-    backgroundColor: '#e9eaec',
   },
 });

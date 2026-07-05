@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AppHeader from '@/src/components/AppHeader';
 import ProductCard from '@/src/components/ProductCard';
+import ProductCardSkeleton from '@/src/components/ProductCardSkeleton';
 import { useDebouncedValue } from '@/src/hooks/useDebouncedValue';
 import { useSearchProducts } from '@/src/hooks/useProductQueries';
 import { ROUTES } from '@/src/navigation/routes';
@@ -87,10 +88,17 @@ export default function SearchScreen() {
           <StateBox icon={<FontAwesome name="search" size={28} color="#98a09a" />} title="Sin resultados" text="Probá con otro nombre, marca o código." />
         )}
         ListFooterComponent={loadingMore ? (
-          <ActivityIndicator color="#087f23" style={styles.footer} />
+          <View style={styles.skeletonFooter}>
+            <ProductCardSkeleton />
+            <ProductCardSkeleton />
+          </View>
         ) : loadMoreError ? (
-          <Pressable onPress={() => fetchNextPage()} style={styles.retryButton}>
-            <Text style={styles.retryText}>No se pudo cargar más. Reintentar</Text>
+          <Pressable accessibilityRole="button" onPress={() => fetchNextPage()} style={styles.retryButton}>
+            <FontAwesome name="exclamation-circle" size={18} color="#bd2432" />
+            <View>
+              <Text style={styles.retryTitle}>No se pudieron cargar más productos</Text>
+              <Text style={styles.retryText}>Tocar para reintentar</Text>
+            </View>
           </Pressable>
         ) : null}
         onEndReached={loadMore}
@@ -128,9 +136,10 @@ const styles = StyleSheet.create({
   stateText: { color: '#747881', fontSize: 13, lineHeight: 19, marginTop: 9, textAlign: 'center' },
   resultCount: { color: '#71727c', fontSize: 11, letterSpacing: 1.5, marginVertical: 18 },
   separator: { height: 10 },
-  footer: { marginVertical: 22 },
-  retryButton: { alignItems: 'center', marginVertical: 18, paddingVertical: 10 },
-  retryText: { color: '#087f23', fontSize: 12, fontWeight: '800' },
+  skeletonFooter: { rowGap: 10, marginTop: 10 },
+  retryButton: { minHeight: 62, flexDirection: 'row', alignItems: 'center', columnGap: 10, borderRadius: 10, backgroundColor: '#ffffff', marginTop: 10, paddingHorizontal: 16 },
+  retryTitle: { color: '#34363b', fontSize: 12, fontWeight: '700' },
+  retryText: { color: '#087f23', fontSize: 10, fontWeight: '700', marginTop: 3 },
   stateRetryButton: { borderRadius: 9, backgroundColor: '#087f23', marginTop: 18, paddingHorizontal: 24, paddingVertical: 12 },
   stateRetryText: { color: '#ffffff', fontSize: 13, fontWeight: '800' },
 });
