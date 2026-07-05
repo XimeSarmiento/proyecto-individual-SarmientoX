@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import type { Product } from '@/src/data/catalog';
+import type { Product } from '@/src/types/product';
 import { ROUTES } from '@/src/navigation/routes';
 import AppHeader from './AppHeader';
 import ProductCard from './ProductCard';

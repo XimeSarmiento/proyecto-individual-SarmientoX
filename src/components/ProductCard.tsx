@@ -3,7 +3,7 @@ import { Link } from 'expo-router';
 import { memo } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type { Product } from '@/src/data/catalog';
+import type { Product } from '@/src/types/product';
 import { fichaShowRoute } from '@/src/navigation/routes';
 import { ECO_SCORE_COLORS, NUTRI_SCORE_COLORS } from '@/src/theme/scoreColors';
 

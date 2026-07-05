@@ -1,4 +1,4 @@
-import type { Product } from '@/src/data/catalog';
+import type { Product } from '@/src/types/product';
 
 export const NUTRI_SCORE_COLORS: Record<Product['nutriScore'], string> = {
   A: '#038141',

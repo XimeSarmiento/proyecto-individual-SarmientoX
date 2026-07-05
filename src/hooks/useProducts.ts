@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { Product } from '@/src/data/catalog';
+import type { Product } from '@/src/types/product';
 import type { ProductPage } from '@/src/services/openFoodFacts';
 
 type ProductLoader = (page: number, signal: AbortSignal) => Promise<ProductPage>;

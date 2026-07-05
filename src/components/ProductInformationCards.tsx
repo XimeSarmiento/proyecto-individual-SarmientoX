@@ -1,7 +1,7 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { StyleSheet, Text, View } from 'react-native';
 
-import type { Product } from '@/src/data/catalog';
+import type { Product } from '@/src/types/product';
 import MissingInformation from './MissingInformation';
 
 export default function ProductInformationCards({ product }: { product: Product }) {

@@ -7,9 +7,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AppHeader from '@/src/components/AppHeader';
 import ProductInformationCards from '@/src/components/ProductInformationCards';
 import { GradeBadge, NovaBadge } from '@/src/components/ScoreBadge';
-import { products, type Product } from '@/src/data/catalog';
 import { buildRoute, ROUTES } from '@/src/navigation/routes';
 import { getProduct } from '@/src/services/openFoodFacts';
+import type { Product } from '@/src/types/product';
 
 export default function ProductDetailScreen() {
   const { id, originType, originId } = useLocalSearchParams<{
@@ -17,13 +17,12 @@ export default function ProductDetailScreen() {
     originType?: 'categoria' | 'marca' | 'taste';
     originId?: string;
   }>();
-  const localProduct = products.find((item) => item.id === id);
-  const [product, setProduct] = useState<Product | null>(localProduct ?? null);
-  const [loading, setLoading] = useState(!localProduct);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    if (localProduct || !id) return;
+    if (!id) return;
 
     const controller = new AbortController();
     setLoading(true);
@@ -41,7 +40,7 @@ export default function ProductDetailScreen() {
       });
 
     return () => controller.abort();
-  }, [id, localProduct]);
+  }, [id]);
 
   if (loading) {
     return (

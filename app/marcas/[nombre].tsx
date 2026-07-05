@@ -1,7 +1,7 @@
 import { Redirect, useLocalSearchParams } from 'expo-router';
 
 import FilteredProductsScreen from '@/src/components/FilteredProductsScreen';
-import { brands } from '@/src/data/catalog';
+import { brands } from '@/src/data/filters';
 import { ROUTES } from '@/src/navigation/routes';
 import { getProductsByBrand } from '@/src/services/openFoodFacts';
 

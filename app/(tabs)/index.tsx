@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AppHeader from '@/src/components/AppHeader';
-import { brands, categories, tastes } from '@/src/data/catalog';
+import { brands, categories, tastes } from '@/src/data/filters';
 import { buildRoute, ROUTES } from '@/src/navigation/routes';
 
 export default function HomeScreen() {

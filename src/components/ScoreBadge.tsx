@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import type { Product } from '@/src/data/catalog';
+import type { Product } from '@/src/types/product';
 import { ECO_SCORE_COLORS, NOVA_COLORS, NUTRI_SCORE_COLORS } from '@/src/theme/scoreColors';
 
 type GradeBadgeProps =

@@ -1,4 +1,4 @@
-import type { Product } from '@/src/data/catalog';
+import type { Product } from '@/src/types/product';
 
 const API_BASE_URL = 'https://world.openfoodfacts.org/api';
 const CACHE_TTL_MS = 2 * 60 * 1000;
