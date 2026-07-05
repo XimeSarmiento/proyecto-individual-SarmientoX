@@ -63,7 +63,7 @@ export default function ProductListScreen({
       />
 
       <FlatList
-        data={loading || error ? [] : products}
+        data={products}
         keyExtractor={(product) => product.id}
         renderItem={({ item }) => (
           <ProductCard product={item} originType={originType} originId={originId} />

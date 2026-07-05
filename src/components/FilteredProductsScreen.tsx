@@ -20,6 +20,9 @@ export default function FilteredProductsScreen({
 }: FilteredProductsScreenProps) {
   const [query, setQuery] = useState('');
   const result = useFilteredProducts(originType, originId, query);
+  const initialError = result.products.length === 0 && result.error instanceof Error
+    ? result.error.message
+    : null;
 
   return (
     <ProductListScreen
@@ -30,7 +33,7 @@ export default function FilteredProductsScreen({
       originType={originType}
       originId={originId}
       loading={result.isPending}
-      error={result.error instanceof Error ? result.error.message : null}
+      error={initialError}
       onRetry={() => result.refetch()}
       loadingMore={result.isFetchingNextPage}
       loadMoreError={result.isFetchNextPageError}
