@@ -1,12 +1,13 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AppHeader from '@/src/components/AppHeader';
 import ProductInformationCards from '@/src/components/ProductInformationCards';
 import { GradeBadge, NovaBadge } from '@/src/components/ScoreBadge';
+import { useFavorites, useToggleFavorite } from '@/src/hooks/useFavorites';
+import { useProduct } from '@/src/hooks/useProductQueries';
 import { buildRoute, ROUTES } from '@/src/navigation/routes';
 import { getProduct } from '@/src/services/openFoodFacts';
 import type { Product } from '@/src/types/product';
