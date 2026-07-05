@@ -57,10 +57,10 @@ export default memo(ProductCard);
 
 const styles = StyleSheet.create({
   pressable: { width: '100%', borderRadius: 10 },
-  card: { width: '100%', minHeight: 92, flexDirection: 'row', alignItems: 'center', borderRadius: 10, backgroundColor: '#ffffff', padding: 10, shadowColor: '#000000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 6, elevation: 1 },
-  compactCard: { minHeight: 82 },
-  image: { width: 64, height: 64, alignItems: 'center', justifyContent: 'center', borderRadius: 7, backgroundColor: '#eef0f2', marginRight: 10 },
-  compactImage: { width: 56, height: 56 },
+  card: { width: '100%', height: 104, flexDirection: 'row', alignItems: 'center', borderRadius: 10, backgroundColor: '#ffffff', padding: 10, shadowColor: '#000000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 6, elevation: 1 },
+  compactCard: { height: 104 },
+  image: { width: 72, height: 72, alignItems: 'center', justifyContent: 'center', borderRadius: 7, backgroundColor: '#eef0f2', marginRight: 10 },
+  compactImage: { width: 72, height: 72 },
   body: { flex: 1, minWidth: 0, paddingRight: 6 },
   name: { color: '#202126', fontSize: 13, fontWeight: '700', lineHeight: 16 },
   maker: { color: '#6d6e75', fontSize: 8, marginTop: 2 },
