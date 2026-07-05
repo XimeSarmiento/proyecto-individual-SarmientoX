@@ -2,7 +2,6 @@ import { Redirect, useLocalSearchParams } from 'expo-router';
 
 import FilteredProductsScreen from '@/src/components/FilteredProductsScreen';
 import { tastes } from '@/src/data/filters';
-import { useProductsByTaste } from '@/src/hooks/useProductQueries';
 import { ROUTES } from '@/src/navigation/routes';
 
 export default function TasteProductsScreen() {
@@ -17,7 +16,6 @@ export default function TasteProductsScreen() {
       placeholder={`Search ${taste.title.toLowerCase()} products`}
       originType="taste"
       originId={taste.id}
-      useProductsHook={useProductsByTaste}
     />
   );
 }

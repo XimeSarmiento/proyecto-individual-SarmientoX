@@ -1,17 +1,14 @@
 import { useState } from 'react';
 
-import { useProductsByCategory } from '@/src/hooks/useProductQueries';
+import { useFilteredProducts, type ProductFilterType } from '@/src/hooks/useProductQueries';
 import ProductListScreen from './ProductListScreen';
-
-type ProductsQueryHook = typeof useProductsByCategory;
 
 type FilteredProductsScreenProps = {
   title: string;
   countNoun: string;
   placeholder: string;
-  originType: 'categoria' | 'marca' | 'taste';
+  originType: ProductFilterType;
   originId: string;
-  useProductsHook: ProductsQueryHook;
 };
 
 export default function FilteredProductsScreen({
@@ -20,10 +17,9 @@ export default function FilteredProductsScreen({
   placeholder,
   originType,
   originId,
-  useProductsHook,
 }: FilteredProductsScreenProps) {
   const [query, setQuery] = useState('');
-  const result = useProductsHook(originId, query);
+  const result = useFilteredProducts(originType, originId, query);
 
   return (
     <ProductListScreen

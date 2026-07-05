@@ -2,7 +2,6 @@ import { Redirect, useLocalSearchParams } from 'expo-router';
 
 import FilteredProductsScreen from '@/src/components/FilteredProductsScreen';
 import { categories } from '@/src/data/filters';
-import { useProductsByCategory } from '@/src/hooks/useProductQueries';
 import { ROUTES } from '@/src/navigation/routes';
 
 export default function CategoryProductsScreen() {
@@ -17,7 +16,6 @@ export default function CategoryProductsScreen() {
       placeholder={`Search ${category.label.replaceAll('-', ' ')}`}
       originType="categoria"
       originId={category.id}
-      useProductsHook={useProductsByCategory}
     />
   );
 }

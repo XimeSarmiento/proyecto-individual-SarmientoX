@@ -1,14 +1,5 @@
-import {
-  transformProductPage,
-  transformProductResponse,
-  type OpenFoodFactsProductResponse,
-  type OpenFoodFactsSearchResponse,
-  type ProductPage,
-} from '@/src/transformers/openFoodFacts.transformer';
-import type { Product } from '@/src/types/product';
-
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://world.openfoodfacts.org/api';
-const PAGE_SIZE = 10;
+export const PRODUCT_PAGE_SIZE = 10;
 const PRODUCT_FIELDS = [
   'code',
   'product_name',
@@ -24,18 +15,36 @@ const PRODUCT_FIELDS = [
   'nutriments',
 ].join(',');
 
-export async function searchProducts(
-  query: string,
-  page = 1,
-  signal?: AbortSignal,
-): Promise<ProductPage> {
-  const normalizedQuery = query.trim();
-  if (/^\d{8,14}$/.test(normalizedQuery)) {
-    const product = await getProduct(normalizedQuery, signal);
-    return { products: product ? [product] : [], page: 1, hasMore: false };
-  }
+export type OpenFoodFactsProduct = {
+  code?: string;
+  product_name?: string;
+  brands?: string;
+  categories_tags?: string[];
+  nutriscore_grade?: string;
+  ecoscore_grade?: string;
+  nova_group?: number;
+  image_front_url?: string;
+  ingredients_text?: string;
+  allergens?: string;
+  allergens_tags?: string[];
+  nutriments?: Record<string, string | number | undefined>;
+};
 
-  return requestTextSearch(normalizedQuery, page, signal);
+export type OpenFoodFactsSearchResponse = {
+  count?: number;
+  page?: number;
+  page_count?: number;
+  page_size?: number;
+  products?: OpenFoodFactsProduct[];
+};
+
+export type OpenFoodFactsProductResponse = {
+  status?: number;
+  product?: OpenFoodFactsProduct;
+};
+
+export function searchProducts(query: string, page = 1, signal?: AbortSignal) {
+  return requestProductPage({ search_terms: query.trim() }, page, signal);
 }
 
 export function getRandomProducts(page = 1, signal?: AbortSignal) {
@@ -43,59 +52,35 @@ export function getRandomProducts(page = 1, signal?: AbortSignal) {
 }
 
 export function getProductsByCategory(category: string, page = 1, signal?: AbortSignal, query = '') {
-  return query.trim()
-    ? requestTextSearch(query.trim(), page, signal, { type: 'categories', value: category })
-    : requestProductPage({ categories_tags_en: category }, page, signal);
+  return requestProductPage(
+    { categories_tags: category, ...(query.trim() && { search_terms: query.trim() }) },
+    page,
+    signal,
+  );
 }
 
 export function getProductsByBrand(brand: string, page = 1, signal?: AbortSignal, query = '') {
-  return query.trim()
-    ? requestTextSearch(query.trim(), page, signal, { type: 'brands', value: brand })
-    : requestProductPage({ brands_tags: brand }, page, signal);
+  return requestProductPage(
+    { brands_tags: brand, ...(query.trim() && { search_terms: query.trim() }) },
+    page,
+    signal,
+  );
 }
 
 export function getProductsByTaste(taste: string, page = 1, signal?: AbortSignal, query = '') {
-  return query.trim()
-    ? requestTextSearch(query.trim(), page, signal, { type: 'labels', value: taste })
-    : requestProductPage({ labels_tags_en: taste }, page, signal);
+  return requestProductPage(
+    { labels_tags: taste, ...(query.trim() && { search_terms: query.trim() }) },
+    page,
+    signal,
+  );
 }
 
-export async function getProduct(code: string, signal?: AbortSignal): Promise<Product | null> {
+export function getProduct(code: string, signal?: AbortSignal) {
   const params = new URLSearchParams({ fields: PRODUCT_FIELDS });
-  const data = await requestJson<OpenFoodFactsProductResponse>(
+  return requestJson<OpenFoodFactsProductResponse>(
     `${API_BASE_URL}/v2/product/${encodeURIComponent(code)}?${params}`,
     signal,
   );
-  return transformProductResponse(data);
-}
-
-async function requestTextSearch(
-  query: string,
-  page: number,
-  signal?: AbortSignal,
-  tag?: { type: 'categories' | 'brands' | 'labels'; value: string },
-) {
-  const params = new URLSearchParams({
-    action: 'process',
-    search_terms: query,
-    fields: PRODUCT_FIELDS,
-    page: String(page),
-    page_size: String(PAGE_SIZE),
-    json: '1',
-  });
-
-  if (tag) {
-    params.set('tagtype_0', tag.type);
-    params.set('tag_contains_0', 'contains');
-    params.set('tag_0', tag.value);
-  }
-
-  const origin = API_BASE_URL.replace(/\/api\/?$/, '');
-  const data = await requestJson<OpenFoodFactsSearchResponse>(
-    `${origin}/cgi/search.pl?${params}`,
-    signal,
-  );
-  return transformProductPage(data, page, PAGE_SIZE);
 }
 
 async function requestProductPage(
@@ -107,14 +92,13 @@ async function requestProductPage(
     ...filters,
     fields: PRODUCT_FIELDS,
     page: String(page),
-    page_size: String(PAGE_SIZE),
-    json: '1',
+    page_size: String(PRODUCT_PAGE_SIZE),
   });
-  const data = await requestJson<OpenFoodFactsSearchResponse>(
+
+  return requestJson<OpenFoodFactsSearchResponse>(
     `${API_BASE_URL}/v2/search?${params}`,
     signal,
   );
-  return transformProductPage(data, page, PAGE_SIZE);
 }
 
 async function requestJson<T>(url: string, signal?: AbortSignal): Promise<T> {
@@ -127,10 +111,8 @@ async function requestJson<T>(url: string, signal?: AbortSignal): Promise<T> {
   });
 
   if (!response.ok) {
-    throw new Error(`Open Food Facts respondió con estado ${response.status}`);
+    throw new Error(`Open Food Facts responded with status ${response.status}`);
   }
 
   return response.json() as Promise<T>;
 }
-
-export type { ProductPage } from '@/src/transformers/openFoodFacts.transformer';

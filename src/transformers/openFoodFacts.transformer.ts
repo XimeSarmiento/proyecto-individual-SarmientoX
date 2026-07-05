@@ -1,32 +1,9 @@
 import type { Product } from '@/src/types/product';
-
-export type OpenFoodFactsProduct = {
-  code?: string;
-  product_name?: string;
-  brands?: string;
-  categories_tags?: string[];
-  nutriscore_grade?: string;
-  ecoscore_grade?: string;
-  nova_group?: number;
-  image_front_url?: string;
-  ingredients_text?: string;
-  allergens?: string;
-  allergens_tags?: string[];
-  nutriments?: Record<string, string | number | undefined>;
-};
-
-export type OpenFoodFactsSearchResponse = {
-  count?: number;
-  page?: number;
-  page_count?: number;
-  page_size?: number;
-  products?: OpenFoodFactsProduct[];
-};
-
-export type OpenFoodFactsProductResponse = {
-  status?: number;
-  product?: OpenFoodFactsProduct;
-};
+import type {
+  OpenFoodFactsProduct,
+  OpenFoodFactsProductResponse,
+  OpenFoodFactsSearchResponse,
+} from '@/src/services/openFoodFacts';
 
 export type ProductPage = {
   products: Product[];
@@ -81,8 +58,8 @@ function transformProduct(product: OpenFoodFactsProduct & { code: string }): Pro
 
   return {
     id: product.code,
-    name: product.product_name?.trim() || 'Producto sin nombre',
-    maker: product.brands?.split(',')[0]?.trim() || 'Marca desconocida',
+    name: product.product_name?.trim() || 'Unnamed product',
+    maker: product.brands?.split(',')[0]?.trim() || 'Unknown brand',
     categoryId: cleanTag(product.categories_tags?.[0] ?? 'other'),
     brandId: slugify(product.brands?.split(',')[0] ?? 'unknown'),
     nutriScore: normalizeGrade(product.nutriscore_grade),
@@ -94,19 +71,19 @@ function transformProduct(product: OpenFoodFactsProduct & { code: string }): Pro
     protein: value('proteins_100g'),
     ingredients: ingredients || '',
     hasIngredients: Boolean(ingredients),
-    allergens: allergens || 'Alérgenos no informados.',
+    allergens: allergens || 'Allergen information unavailable.',
     hasNutritionInfo: NUTRITION_KEYS.some(
       (key) => nutriments[key] !== undefined && nutriments[key] !== '',
     ),
     nutrition: [
-      { label: 'Energía', value: energyKj },
-      { label: 'Grasas', value: value('fat_100g') },
-      { label: '— de las cuales saturadas', value: value('saturated-fat_100g'), detail: true },
-      { label: 'Carbohidratos', value: value('carbohydrates_100g') },
-      { label: '— de los cuales azúcares', value: value('sugars_100g'), detail: true },
-      { label: 'Fibra', value: value('fiber_100g') },
-      { label: 'Proteínas', value: value('proteins_100g') },
-      { label: 'Sal', value: value('salt_100g') },
+      { label: 'Energy', value: energyKj },
+      { label: 'Fat', value: value('fat_100g') },
+      { label: '— of which saturated', value: value('saturated-fat_100g'), detail: true },
+      { label: 'Carbohydrates', value: value('carbohydrates_100g') },
+      { label: '— of which sugars', value: value('sugars_100g'), detail: true },
+      { label: 'Fiber', value: value('fiber_100g') },
+      { label: 'Protein', value: value('proteins_100g') },
+      { label: 'Salt', value: value('salt_100g') },
     ],
   };
 }

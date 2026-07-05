@@ -6,25 +6,32 @@ import {
   getProductsByCategory,
   getProductsByTaste,
   getRandomProducts,
+  type OpenFoodFactsSearchResponse,
+  PRODUCT_PAGE_SIZE,
   searchProducts,
-  type ProductPage,
 } from '@/src/services/openFoodFacts';
+import {
+  transformProductPage,
+  transformProductResponse,
+  type ProductPage,
+} from '@/src/transformers/openFoodFacts.transformer';
 
 const STALE_TIME = 5 * 60 * 1000;
+export type ProductFilterType = 'categoria' | 'marca' | 'taste';
 
 export const productKeys = {
   all: ['products'] as const,
   detail: (id: string) => [...productKeys.all, 'detail', id] as const,
   search: (query: string) => [...productKeys.all, 'search', query] as const,
-  category: (id: string, query: string) => [...productKeys.all, 'category', id, query] as const,
-  brand: (id: string, query: string) => [...productKeys.all, 'brand', id, query] as const,
-  taste: (id: string, query: string) => [...productKeys.all, 'taste', id, query] as const,
+  filtered: (type: ProductFilterType, id: string, query: string) =>
+    [...productKeys.all, type, id, query] as const,
 };
 
 export function productQueryOptions(id: string) {
   return {
     queryKey: productKeys.detail(id),
-    queryFn: ({ signal }: { signal: AbortSignal }) => getProduct(id, signal),
+    queryFn: async ({ signal }: { signal: AbortSignal }) =>
+      transformProductResponse(await getProduct(id, signal)),
     staleTime: STALE_TIME,
   };
 }
@@ -36,35 +43,38 @@ export function useProduct(id: string) {
 export function useSearchProducts(query: string, enabled = true) {
   return useProductsInfiniteQuery(
     productKeys.search(query),
-    ({ pageParam, signal }) => query
-      ? searchProducts(query, pageParam, signal)
-      : getRandomProducts(pageParam, signal),
+    async ({ pageParam, signal }) => {
+      if (/^\d{8,14}$/.test(query)) {
+        const product = transformProductResponse(await getProduct(query, signal));
+        return { products: product ? [product] : [], page: 1, hasMore: false };
+      }
+
+      const response = query
+        ? await searchProducts(query, pageParam, signal)
+        : await getRandomProducts(pageParam, signal);
+      return transformPage(response, pageParam);
+    },
     enabled,
   );
 }
 
-export function useProductsByCategory(id: string, query: string) {
+export function useFilteredProducts(type: ProductFilterType, id: string, query: string) {
   return useProductsInfiniteQuery(
-    productKeys.category(id, query),
-    ({ pageParam, signal }) => getProductsByCategory(id, pageParam, signal, query),
+    productKeys.filtered(type, id, query),
+    async ({ pageParam, signal }) => {
+      const response = type === 'categoria'
+        ? await getProductsByCategory(id, pageParam, signal, query)
+        : type === 'marca'
+          ? await getProductsByBrand(id, pageParam, signal, query)
+          : await getProductsByTaste(id, pageParam, signal, query);
+      return transformPage(response, pageParam);
+    },
     Boolean(id),
   );
 }
 
-export function useProductsByBrand(id: string, query: string) {
-  return useProductsInfiniteQuery(
-    productKeys.brand(id, query),
-    ({ pageParam, signal }) => getProductsByBrand(id, pageParam, signal, query),
-    Boolean(id),
-  );
-}
-
-export function useProductsByTaste(id: string, query: string) {
-  return useProductsInfiniteQuery(
-    productKeys.taste(id, query),
-    ({ pageParam, signal }) => getProductsByTaste(id, pageParam, signal, query),
-    Boolean(id),
-  );
+function transformPage(response: OpenFoodFactsSearchResponse, page: number) {
+  return transformProductPage(response, page, PRODUCT_PAGE_SIZE);
 }
 
 function useProductsInfiniteQuery(
@@ -82,6 +92,5 @@ function useProductsInfiniteQuery(
   });
 
   const products = query.data?.pages.flatMap((page) => page.products) ?? [];
-
   return { ...query, products };
 }
