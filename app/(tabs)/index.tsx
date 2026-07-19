@@ -1,5 +1,5 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -10,7 +10,7 @@ import { buildRoute, ROUTES } from '@/src/navigation/routes';
 export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <AppHeader leftIcon={null} rightIcon="profile" />
+      <AppHeader leftIcon={null} onRightPress={() => router.push(buildRoute(ROUTES.AUTH))} rightIcon="profile" />
 
       <ScrollView
         style={styles.scroll}

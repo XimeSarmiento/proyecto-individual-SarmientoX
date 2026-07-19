@@ -5,6 +5,7 @@ type AppHeaderProps = {
   leftIcon?: 'bars' | 'arrow-left' | null;
   rightIcon?: 'profile';
   onLeftPress?: () => void;
+  onRightPress?: () => void;
   title?: string;
 };
 
@@ -12,6 +13,7 @@ export default function AppHeader({
   leftIcon = 'bars',
   rightIcon,
   onLeftPress,
+  onRightPress,
   title = 'Digital Epicurean',
 }: AppHeaderProps) {
   return (
@@ -29,9 +31,13 @@ export default function AppHeader({
       </Text>
 
       {rightIcon === 'profile' ? (
-        <View style={styles.sideButton}>
+        <Pressable
+          accessibilityLabel="Open profile"
+          hitSlop={10}
+          onPress={onRightPress}
+          style={styles.sideButton}>
           <FontAwesome name="user-circle-o" size={18} color="#00591c" />
-        </View>
+        </Pressable>
       ) : (
         <View style={styles.sideButton} />
       )}

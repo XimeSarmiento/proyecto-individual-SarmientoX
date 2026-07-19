@@ -4,6 +4,7 @@ export const ROUTES = {
   HOME: '/',
   TABS_SEARCH: '/search',
   TABS_FAVORITES: '/favorites',
+  AUTH: '/auth',
   CATEGORIA: '/categorias/[nombre]',
   MARCA: '/marcas/[nombre]',
   TASTE: '/tastes/[nombre]',
