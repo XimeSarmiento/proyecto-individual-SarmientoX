@@ -33,3 +33,16 @@ create policy "users can delete own favorites"
 on public.favorites
 for delete
 using (auth.uid() = user_id);
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'favorites'
+  ) then
+    alter publication supabase_realtime add table public.favorites;
+  end if;
+end $$;

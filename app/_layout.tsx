@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { AuthProvider } from '@/src/providers/AuthProvider';
+import { FavoritesRealtimeProvider } from '@/src/providers/FavoritesRealtimeProvider';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -54,12 +55,14 @@ function RootLayoutNav() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <ThemeProvider value={DefaultTheme}>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="auth" />
-          </Stack>
-        </ThemeProvider>
+        <FavoritesRealtimeProvider>
+          <ThemeProvider value={DefaultTheme}>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="auth" />
+            </Stack>
+          </ThemeProvider>
+        </FavoritesRealtimeProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
