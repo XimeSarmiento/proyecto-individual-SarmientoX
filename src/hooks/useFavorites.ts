@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useId, useMemo } from 'react';
 
 import {
   getFavorites,
@@ -6,16 +7,48 @@ import {
   saveFavorite,
 } from '@/src/services/favorites.service';
 import { useAuth } from '@/src/providers/AuthProvider';
+import { supabase } from '@/src/services/supabase';
 import type { Product } from '@/src/types/product';
 
 export const FAVORITES_QUERY_KEY = 'favorites';
 
 export function useFavorites() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const subscriptionId = useId();
+  const queryKey = useMemo(
+    () => [FAVORITES_QUERY_KEY, user?.id ?? 'guest'] as const,
+    [user?.id],
+  );
+
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel(`favorites:${user.id}:${subscriptionId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'favorites',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [queryClient, queryKey, subscriptionId, user]);
 
   return useQuery({
-    queryKey: [FAVORITES_QUERY_KEY, user?.id ?? 'guest'],
+    queryKey,
     queryFn: getFavorites,
+    enabled: Boolean(user),
   });
 }
 

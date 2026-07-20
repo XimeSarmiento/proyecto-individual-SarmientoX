@@ -9,6 +9,7 @@ import { GradeBadge, NovaBadge } from '@/src/components/ScoreBadge';
 import { useFavorites, useToggleFavorite } from '@/src/hooks/useFavorites';
 import { useProduct } from '@/src/hooks/useProductQueries';
 import { buildRoute, ROUTES } from '@/src/navigation/routes';
+import { useAuth } from '@/src/providers/AuthProvider';
 
 export default function ProductDetailScreen() {
   const { id, originType, originId } = useLocalSearchParams<{
@@ -17,6 +18,7 @@ export default function ProductDetailScreen() {
     originId?: string;
   }>();
   const { data: product, isPending: loading, isError } = useProduct(id);
+  const { user } = useAuth();
   const { data: favorites = [] } = useFavorites();
   const toggleFavorite = useToggleFavorite();
   const isFavorite = favorites.some((favorite) => favorite.id === id);
@@ -57,7 +59,14 @@ export default function ProductDetailScreen() {
           <Pressable
             accessibilityLabel={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
             disabled={toggleFavorite.isPending}
-            onPress={() => toggleFavorite.mutate({ product, isFavorite })}
+            onPress={() => {
+              if (!user) {
+                router.push(buildRoute(ROUTES.AUTH, { reason: 'save-favorite' }));
+                return;
+              }
+
+              toggleFavorite.mutate({ product, isFavorite });
+            }}
             style={styles.favoriteButton}>
             <FontAwesome name={isFavorite ? 'heart' : 'heart-o'} size={18} color="#087f23" />
           </Pressable>

@@ -1,5 +1,5 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -15,17 +15,29 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AppHeader from '@/src/components/AppHeader';
+import { buildRoute, ROUTES } from '@/src/navigation/routes';
 import { useAuth } from '@/src/providers/AuthProvider';
-import { signInWithEmail, signOut, signUpWithEmail } from '@/src/services/auth.service';
+import {
+  resendSignupConfirmation,
+  signInWithEmail,
+  signOut,
+  signUpWithEmail,
+} from '@/src/services/auth.service';
 
 export default function AuthScreen() {
+  const { reason, returnTo } = useLocalSearchParams<{
+    reason?: 'favorites' | 'save-favorite';
+    returnTo?: string;
+  }>();
   const { initialized, isConfigured, user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
 
   const submitLabel = mode === 'signIn' ? 'Log in' : 'Create account';
+  const authReasonText = getAuthReasonText(reason);
 
   async function handleSubmit() {
     if (!email.trim() || !password) {
@@ -35,16 +47,45 @@ export default function AuthScreen() {
 
     setLoading(true);
     try {
+      let hasSession = false;
       if (mode === 'signIn') {
-        await signInWithEmail(email, password);
+        const data = await signInWithEmail(email, password);
+        hasSession = Boolean(data.session);
       } else {
-        await signUpWithEmail(email, password);
+        const data = await signUpWithEmail(email, password);
+        hasSession = Boolean(data.session);
         Alert.alert('Account created', 'Check your email if Supabase asks for confirmation.');
       }
+
+      if (hasSession) {
+        navigateAfterAuth(returnTo, reason);
+      }
     } catch (error) {
-      Alert.alert('Authentication error', error instanceof Error ? error.message : 'Try again.');
+      const message = error instanceof Error ? error.message : 'Try again.';
+      if (isEmailConfirmationError(message)) {
+        Alert.alert('Email not confirmed', 'Check your inbox or resend the confirmation email.');
+      } else {
+        Alert.alert('Authentication error', message);
+      }
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleResendConfirmation() {
+    if (!email.trim()) {
+      Alert.alert('Missing email', 'Enter your email first.');
+      return;
+    }
+
+    setResending(true);
+    try {
+      await resendSignupConfirmation(email);
+      Alert.alert('Email sent', 'Check your inbox for a new confirmation link.');
+    } catch (error) {
+      Alert.alert('Could not resend email', error instanceof Error ? error.message : 'Try again later.');
+    } finally {
+      setResending(false);
     }
   }
 
@@ -96,6 +137,13 @@ export default function AuthScreen() {
             </View>
           ) : (
             <View style={styles.form}>
+              {authReasonText ? (
+                <View style={styles.notice}>
+                  <FontAwesome name="lock" size={18} color="#087f23" />
+                  <Text style={styles.noticeText}>{authReasonText}</Text>
+                </View>
+              ) : null}
+
               <View style={styles.segment}>
                 <Pressable
                   onPress={() => setMode('signIn')}
@@ -135,6 +183,19 @@ export default function AuthScreen() {
               <Pressable disabled={loading} onPress={handleSubmit} style={styles.primaryButton}>
                 {loading ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.primaryButtonText}>{submitLabel}</Text>}
               </Pressable>
+
+              {(
+                <Pressable
+                  disabled={resending}
+                  onPress={handleResendConfirmation}
+                  style={styles.linkButton}>
+                  {resending ? (
+                    <ActivityIndicator color="#087f23" />
+                  ) : (
+                    <Text style={styles.linkButtonText}>Resend confirmation email</Text>
+                  )}
+                </Pressable>
+              )}
             </View>
           )}
         </View>
@@ -143,12 +204,42 @@ export default function AuthScreen() {
   );
 }
 
+function isEmailConfirmationError(message: string) {
+  const normalized = message.toLowerCase();
+  return normalized.includes('email not confirmed') || normalized.includes('not confirmed');
+}
+
+function getAuthReasonText(reason?: 'favorites' | 'save-favorite') {
+  if (reason === 'favorites') {
+    return 'You need to log in or register to view and sync your favorites.';
+  }
+
+  if (reason === 'save-favorite') {
+    return 'You need to log in or register before saving this product as a favorite.';
+  }
+
+  return null;
+}
+
+function navigateAfterAuth(returnTo?: string, reason?: 'favorites' | 'save-favorite') {
+  if (returnTo === ROUTES.TABS_FAVORITES) {
+    router.replace(buildRoute(ROUTES.TABS_FAVORITES));
+    return;
+  }
+
+  if (reason && router.canGoBack()) {
+    router.back();
+  }
+}
+
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#f6f7f8' },
   keyboard: { flex: 1 },
   content: { flex: 1, justifyContent: 'center', paddingHorizontal: 20, paddingBottom: 40 },
   centerState: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   form: { width: '100%' },
+  notice: { minHeight: 58, flexDirection: 'row', alignItems: 'center', columnGap: 12, borderRadius: 8, backgroundColor: '#e9f6e7', marginBottom: 22, paddingHorizontal: 14, paddingVertical: 12 },
+  noticeText: { flex: 1, color: '#315f38', fontSize: 13, fontWeight: '700', lineHeight: 18 },
   segment: { height: 44, flexDirection: 'row', borderRadius: 8, backgroundColor: '#e7e9ec', marginBottom: 28, padding: 4 },
   segmentButton: { flex: 1, alignItems: 'center', justifyContent: 'center', borderRadius: 6 },
   segmentButtonActive: { backgroundColor: '#ffffff' },
@@ -158,6 +249,8 @@ const styles = StyleSheet.create({
   input: { height: 52, borderRadius: 8, backgroundColor: '#ffffff', color: '#202226', fontSize: 15, paddingHorizontal: 14 },
   primaryButton: { height: 52, alignItems: 'center', justifyContent: 'center', borderRadius: 8, backgroundColor: '#087f23', marginTop: 24 },
   primaryButtonText: { color: '#ffffff', fontSize: 14, fontWeight: '900' },
+  linkButton: { minHeight: 44, alignItems: 'center', justifyContent: 'center', marginTop: 12 },
+  linkButtonText: { color: '#087f23', fontSize: 13, fontWeight: '900' },
   secondaryButton: { height: 48, minWidth: 144, alignItems: 'center', justifyContent: 'center', borderRadius: 8, borderWidth: 1, borderColor: '#087f23', marginTop: 24, paddingHorizontal: 18 },
   secondaryButtonText: { color: '#087f23', fontSize: 13, fontWeight: '900' },
   stateCard: { alignItems: 'center', borderRadius: 8, backgroundColor: '#ffffff', paddingHorizontal: 20, paddingVertical: 28 },

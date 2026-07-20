@@ -1,13 +1,30 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { Redirect } from 'expo-router';
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AppHeader from '@/src/components/AppHeader';
 import ProductCard from '@/src/components/ProductCard';
 import { useFavorites } from '@/src/hooks/useFavorites';
+import { buildRoute, ROUTES } from '@/src/navigation/routes';
+import { useAuth } from '@/src/providers/AuthProvider';
 
 export default function FavoritesScreen() {
+  const { initialized, user } = useAuth();
   const { data: favorites = [], isPending, isError } = useFavorites();
+
+  if (!initialized) {
+    return (
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <AppHeader leftIcon={null} />
+        <ActivityIndicator color="#087f23" style={styles.state} />
+      </SafeAreaView>
+    );
+  }
+
+  if (!user) {
+    return <Redirect href={buildRoute(ROUTES.AUTH, { reason: 'favorites', returnTo: ROUTES.TABS_FAVORITES })} />;
+  }
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
