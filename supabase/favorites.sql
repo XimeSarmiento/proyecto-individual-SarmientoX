@@ -8,6 +8,7 @@ create table if not exists public.favorites (
 );
 
 alter table public.favorites enable row level security;
+alter table public.favorites replica identity full;
 
 drop policy if exists "users can read own favorites" on public.favorites;
 create policy "users can read own favorites"

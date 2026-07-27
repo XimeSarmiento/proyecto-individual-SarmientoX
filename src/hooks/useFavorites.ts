@@ -22,6 +22,8 @@ export function useFavorites() {
     queryKey,
     queryFn: getFavorites,
     enabled: Boolean(user),
+    refetchInterval: user ? 3000 : false,
+    refetchOnWindowFocus: true,
   });
 }
 
