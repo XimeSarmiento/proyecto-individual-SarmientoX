@@ -68,7 +68,9 @@ export default function HomeScreen() {
                       <Text style={{ ...styles.brandMarkText, color: item.text }}>{item.mark}</Text>
                     </View>
                   ) : (
-                    <View style={styles.brandSpacer} />
+                    <View style={styles.brandMissingMark}>
+                      <FontAwesome name="picture-o" size={22} color="#a8a8a8" />
+                    </View>
                   )}
                   <Text style={styles.brandName}>{item.name}</Text>
                 </Pressable>
@@ -213,8 +215,15 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontWeight: '700',
   },
-  brandSpacer: {
-    height: 70,
+  brandMissingMark: {
+    width: 52,
+    height: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: '#d5d5d5',
+    marginBottom: 18,
   },
   brandName: {
     color: '#000000',
