@@ -14,23 +14,22 @@ export const FAVORITES_QUERY_KEY = 'favorites';
 export function useFavorites() {
   const { user } = useAuth();
   const queryKey = useMemo(
-    () => [FAVORITES_QUERY_KEY, user?.id ?? 'guest'] as const,
-    [user?.id],
+    () => [FAVORITES_QUERY_KEY, user?.uid ?? 'guest'] as const,
+    [user?.uid],
   );
 
   return useQuery({
     queryKey,
     queryFn: getFavorites,
     enabled: Boolean(user),
-    refetchInterval: user ? 3000 : false,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false,
   });
 }
 
 export function useToggleFavorite() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const queryKey = [FAVORITES_QUERY_KEY, user?.id ?? 'guest'] as const;
+  const queryKey = [FAVORITES_QUERY_KEY, user?.uid ?? 'guest'] as const;
 
   return useMutation({
     mutationFn: async ({ product, isFavorite }: { product: Product; isFavorite: boolean }) => {

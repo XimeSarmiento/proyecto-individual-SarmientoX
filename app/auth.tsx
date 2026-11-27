@@ -1,12 +1,12 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -18,7 +18,6 @@ import AppHeader from '@/src/components/AppHeader';
 import { buildRoute, ROUTES } from '@/src/navigation/routes';
 import { useAuth } from '@/src/providers/AuthProvider';
 import {
-  resendSignupConfirmation,
   signInWithEmail,
   signOut,
   signUpWithEmail,
@@ -32,9 +31,22 @@ export default function AuthScreen() {
   const { initialized, isConfigured, user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [lastCharacter, setLastCharacter] = useState('');
   const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
   const [loading, setLoading] = useState(false);
-  const [resending, setResending] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    if (!lastCharacter) return;
+    const timeout = setTimeout(() => setLastCharacter(''), 2200);
+    return () => clearTimeout(timeout);
+  }, [lastCharacter, password]);
+
+  function handlePasswordChange(nextPassword: string) {
+    setLastCharacter(nextPassword.length === password.length + 1 ? nextPassword.slice(-1) : '');
+    setPassword(nextPassword);
+  }
 
   const submitLabel = mode === 'signIn' ? 'Log in' : 'Create account';
   const authReasonText = getAuthReasonText(reason);
@@ -47,45 +59,16 @@ export default function AuthScreen() {
 
     setLoading(true);
     try {
-      let hasSession = false;
       if (mode === 'signIn') {
-        const data = await signInWithEmail(email, password);
-        hasSession = Boolean(data.session);
+        await signInWithEmail(email, password);
       } else {
-        const data = await signUpWithEmail(email, password);
-        hasSession = Boolean(data.session);
-        Alert.alert('Account created', 'Check your email if Supabase asks for confirmation.');
+        await signUpWithEmail(email, password);
       }
-
-      if (hasSession) {
-        navigateAfterAuth(returnTo, reason);
-      }
+      navigateAfterAuth(returnTo, reason);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Try again.';
-      if (isEmailConfirmationError(message)) {
-        Alert.alert('Email not confirmed', 'Check your inbox or resend the confirmation email.');
-      } else {
-        Alert.alert('Authentication error', message);
-      }
+      Alert.alert('Authentication error', getAuthErrorMessage(error));
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function handleResendConfirmation() {
-    if (!email.trim()) {
-      Alert.alert('Missing email', 'Enter your email first.');
-      return;
-    }
-
-    setResending(true);
-    try {
-      await resendSignupConfirmation(email);
-      Alert.alert('Email sent', 'Check your inbox for a new confirmation link.');
-    } catch (error) {
-      Alert.alert('Could not resend email', error instanceof Error ? error.message : 'Try again later.');
-    } finally {
-      setResending(false);
     }
   }
 
@@ -114,16 +97,17 @@ export default function AuthScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <AppHeader leftIcon="arrow-left" onLeftPress={() => router.back()} title="Account" />
-      <KeyboardAvoidingView
-        behavior={Platform.select({ ios: 'padding', default: undefined })}
-        style={styles.keyboard}>
-        <View style={styles.content}>
+      <KeyboardAvoidingView behavior="padding" style={styles.keyboard}>
+        <ScrollView
+          ref={scrollRef}
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled">
           {!isConfigured ? (
             <View style={styles.stateCard}>
               <FontAwesome name="exclamation-circle" size={30} color="#bd2432" />
-              <Text style={styles.stateTitle}>Supabase is not configured</Text>
+              <Text style={styles.stateTitle}>Firebase is not configured</Text>
               <Text style={styles.stateText}>
-                Complete EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY in .env, then restart Expo.
+                Complete the EXPO_PUBLIC_FIREBASE_* values in .env, then restart Expo.
               </Text>
             </View>
           ) : user ? (
@@ -170,43 +154,59 @@ export default function AuthScreen() {
               />
 
               <Text style={styles.label}>Password</Text>
-              <TextInput
-                autoCapitalize="none"
-                onChangeText={setPassword}
-                placeholder="At least 6 characters"
-                placeholderTextColor="#969aa3"
-                secureTextEntry
-                style={styles.input}
-                value={password}
-              />
+              <View style={styles.passwordField}>
+                <TextInput
+                  autoCapitalize="none"
+                  autoComplete={mode === 'signUp' ? 'new-password' : 'current-password'}
+                  onBlur={() => setLastCharacter('')}
+                  onChangeText={handlePasswordChange}
+                  onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 250)}
+                  placeholder="At least 6 characters"
+                  placeholderTextColor="#969aa3"
+                  secureTextEntry={!showPassword}
+                  caretHidden={Boolean(lastCharacter && !showPassword)}
+                  style={[styles.passwordInput, lastCharacter && !showPassword && styles.passwordInputPreview]}
+                  value={password}
+                />
+                {!showPassword && lastCharacter ? (
+                  <Text pointerEvents="none" numberOfLines={1} style={styles.passwordPreview}>
+                    {'•'.repeat(password.length - 1)}{lastCharacter}
+                  </Text>
+                ) : null}
+                <Pressable
+                  accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                  accessibilityRole="button"
+                  onPress={() => {
+                    setShowPassword((visible) => !visible);
+                    setLastCharacter('');
+                  }}
+                  style={styles.visibilityButton}>
+                  <FontAwesome name={showPassword ? 'eye-slash' : 'eye'} size={20} color="#6f727a" />
+                </Pressable>
+              </View>
 
               <Pressable disabled={loading} onPress={handleSubmit} style={styles.primaryButton}>
                 {loading ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.primaryButtonText}>{submitLabel}</Text>}
               </Pressable>
 
-              {(
-                <Pressable
-                  disabled={resending}
-                  onPress={handleResendConfirmation}
-                  style={styles.linkButton}>
-                  {resending ? (
-                    <ActivityIndicator color="#087f23" />
-                  ) : (
-                    <Text style={styles.linkButtonText}>Resend confirmation email</Text>
-                  )}
-                </Pressable>
-              )}
             </View>
           )}
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-function isEmailConfirmationError(message: string) {
-  const normalized = message.toLowerCase();
-  return normalized.includes('email not confirmed') || normalized.includes('not confirmed');
+function getAuthErrorMessage(error: unknown) {
+  const code = typeof error === 'object' && error !== null && 'code' in error ? String(error.code) : '';
+  switch (code) {
+    case 'auth/email-already-in-use': return 'This email already has an account. Log in instead.';
+    case 'auth/invalid-email': return 'Enter a valid email address.';
+    case 'auth/weak-password': return 'Choose a stronger password.';
+    case 'auth/invalid-credential': return 'The email or password is incorrect.';
+    case 'auth/network-request-failed': return 'Check your internet connection and try again.';
+    default: return error instanceof Error ? error.message : 'Try again.';
+  }
 }
 
 function getAuthReasonText(reason?: 'favorites' | 'save-favorite') {
@@ -235,7 +235,7 @@ function navigateAfterAuth(returnTo?: string, reason?: 'favorites' | 'save-favor
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#f6f7f8' },
   keyboard: { flex: 1 },
-  content: { flex: 1, justifyContent: 'center', paddingHorizontal: 20, paddingBottom: 40 },
+  content: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 20, paddingVertical: 24 },
   centerState: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   form: { width: '100%' },
   notice: { minHeight: 58, flexDirection: 'row', alignItems: 'center', columnGap: 12, borderRadius: 8, backgroundColor: '#e9f6e7', marginBottom: 22, paddingHorizontal: 14, paddingVertical: 12 },
@@ -247,10 +247,13 @@ const styles = StyleSheet.create({
   segmentTextActive: { color: '#087f23' },
   label: { color: '#3a3d43', fontSize: 12, fontWeight: '800', marginBottom: 8, marginTop: 14 },
   input: { height: 52, borderRadius: 8, backgroundColor: '#ffffff', color: '#202226', fontSize: 15, paddingHorizontal: 14 },
+  passwordField: { height: 52, flexDirection: 'row', alignItems: 'center', borderRadius: 8, backgroundColor: '#ffffff' },
+  passwordInput: { flex: 1, height: 52, color: '#202226', fontSize: 15, paddingLeft: 14 },
+  passwordInputPreview: { color: 'transparent' },
+  passwordPreview: { position: 'absolute', left: 14, right: 52, height: 52, lineHeight: 52, color: '#202226', fontSize: 15 },
+  visibilityButton: { width: 52, height: 52, alignItems: 'center', justifyContent: 'center' },
   primaryButton: { height: 52, alignItems: 'center', justifyContent: 'center', borderRadius: 8, backgroundColor: '#087f23', marginTop: 24 },
   primaryButtonText: { color: '#ffffff', fontSize: 14, fontWeight: '900' },
-  linkButton: { minHeight: 44, alignItems: 'center', justifyContent: 'center', marginTop: 12 },
-  linkButtonText: { color: '#087f23', fontSize: 13, fontWeight: '900' },
   secondaryButton: { height: 48, minWidth: 144, alignItems: 'center', justifyContent: 'center', borderRadius: 8, borderWidth: 1, borderColor: '#087f23', marginTop: 24, paddingHorizontal: 18 },
   secondaryButtonText: { color: '#087f23', fontSize: 13, fontWeight: '900' },
   stateCard: { alignItems: 'center', borderRadius: 8, backgroundColor: '#ffffff', paddingHorizontal: 20, paddingVertical: 28 },
